@@ -2,7 +2,7 @@
 	lattice                  = "drift.lte",
 	use_beamline             = "mainbeamline",
 	output                   = %s.out,
-	! centroid                 = %s.cen,
+	centroid                 = %s.cen,
 	! sigma                    = %s.sig,
 	! final                    = %s.fin,
 	! acceptance               = %s.acceptance,
@@ -15,7 +15,7 @@
 	random_number_seed       = 987654321,
 	tracking_updates         = 1,
 	p_central                = 2e4,
-	! expand_for               = "twopages.out"
+	! expand_for               = "high.out",
 	load_balancing_on        = 0
 &end
 
