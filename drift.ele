@@ -33,10 +33,6 @@
 	prebunched  = 1
 &end
 
-&matrix_output
-	printout="%s.mpr"
-&end
-
 ! &bunched_beam
 !         bunch                 = "%s.bun",
 !         n_particles_per_bunch = 10000,
