@@ -1,7 +1,7 @@
 &run_setup
 	lattice                  = "drift.lte",
 	use_beamline             = "mainbeamline",
-	! output                   = %s.out,
+	output                   = %s.out,
 	! centroid                 = %s.cen,
 	! sigma                    = %s.sig,
 	! final                    = %s.fin,
@@ -13,40 +13,43 @@
 	default_order            = 2,
 	print_statistics         = 1,
 	random_number_seed       = 987654321,
-	expand_for               = "NRTL_input_binary.sdds",
 	tracking_updates         = 1,
+	p_central                = 2e4,
+	! expand_for               = "twopages.out"
 	load_balancing_on        = 0
 &end
 
 &run_control
-	n_steps                  = 1
-&end
-
-&twiss_output
-	filename     = %s.twi,
-	matched      = 0,
-	beta_x       = 3.4013,
-	beta_y       = 3.0819,
-	alpha_x      = 0.1562,
-	alpha_y      = 0.0657,
-	eta_x        = 0,
-	etap_x       = 0,
-	eta_y        = 0,
-	etap_y       = 0
-	concat_order = 3
+	n_steps                  = 1,
+	reset_rf_for_each_step   = 0,
+	first_is_fiducial        = 0,
+	restrict_fiducialization = 0
 &end
 
 &sdds_beam
-	input="NRTL_input_binary.sdds",
-	center_transversely=1,
-	center_arrival_time=1
+	input       = "high.out",
+	input_type  = "elegant",
+	reuse_bunch = 0,
+	prebunched  = 1
 &end
 
-! &matrix_output
-!         printout=%s.mpr,
-!         printout_order=2,
-!         SDDS_output=%s.mat,
-!         SDDS_output_order=2,
+&matrix_output
+	printout="%s.mpr"
+&end
+
+! &bunched_beam
+!         bunch                 = "%s.bun",
+!         n_particles_per_bunch = 10000,
+!         emit_nx               = 10e-6,
+!         emit_ny               = 10e-6,
+!         beta_x                = 1,
+!         beta_y                = 1,
+!         alpha_x               = 0,
+!         alpha_y               = 0,
+!         Po                    = 4e4,
+!         sigma_s               = 100e-6,
+!         sigma_dp              = 0.5e-2,
+!         one_random_bunch      = 1
 ! &end
 
 &track
