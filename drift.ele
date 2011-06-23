@@ -1,3 +1,8 @@
+&transmute_elements
+	name=BEND,
+	new_type=SCRIPT
+&end
+
 &run_setup
 	lattice                  = "drift.lte",
 	use_beamline             = "mainbeamline",
@@ -15,8 +20,22 @@
 	random_number_seed       = 987654321,
 	tracking_updates         = 1,
 	p_central                = 2e4,
-	! expand_for               = "high.out",
 	load_balancing_on        = 0
+&end
+&save_lattice
+	filename="%s.new"
+&end
+
+! &alter_elements
+!         name=BEND,
+!         item=FRACTION,
+!         value=.001
+! &end
+
+&load_parameters
+	filename="bend.par",
+	change_defined_values=1,
+	verbose=1
 &end
 
 &run_control
@@ -26,27 +45,21 @@
 	restrict_fiducialization = 0
 &end
 
-&sdds_beam
-	input       = "high.out",
-	input_type  = "elegant",
-	reuse_bunch = 0,
-	prebunched  = 1
-&end
 
-! &bunched_beam
-!         bunch                 = "%s.bun",
-!         n_particles_per_bunch = 10000,
-!         emit_nx               = 10e-6,
-!         emit_ny               = 10e-6,
-!         beta_x                = 1,
-!         beta_y                = 1,
-!         alpha_x               = 0,
-!         alpha_y               = 0,
-!         Po                    = 4e4,
-!         sigma_s               = 100e-6,
-!         sigma_dp              = 0.5e-2,
-!         one_random_bunch      = 1
-! &end
+&bunched_beam
+	bunch                 = "%s.bun",
+	n_particles_per_bunch = 10000,
+	emit_nx               = 10e-6,
+	emit_ny               = 10e-6,
+	beta_x                = 1,
+	beta_y                = 1,
+	alpha_x               = 0,
+	alpha_y               = 0,
+	Po                    = 4e4,
+	sigma_s               = 100e-6,
+	sigma_dp              = 0.5e-2,
+	one_random_bunch      = 1
+&end
 
 &track
 &end
