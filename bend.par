@@ -1,0 +1,8 @@
+SDDS1
+&column name=ElementName, type=string, &end
+&column name=ElementParameter, type=string, &end
+&column name=ParameterValueString, type=string, &end
+&data mode=ascii, &end
+!page number 1
+	1
+BEND USE_CSH 1
