@@ -18,6 +18,22 @@
 	load_balancing_on        = 0
 &end
 
+&load_parameters
+	filename              = "err.par",
+	change_defined_values = 1,
+	verbose               = 1
+&end
+
+&correct
+	mode                   = "trajectory",
+	method                 = "global",
+	trajectory_output      = "%s.orb",
+	corrector_output       = "%s.orb",
+	statistics             = "%s.orb",
+	verbose                = 1,
+	track_before_and_after = 1
+&end
+
 &run_control
 	n_steps                  = 1
 &end
