@@ -2,3 +2,16 @@
 *.cen
 *.fin
 *.log
+*~
+*.txt
+*.bun
+*.ana
+*.mat
+*.mpr
+*.twi
+*.tmp
+*.eps
+*.orb
+*.out
+*.par
+
