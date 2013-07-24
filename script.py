@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import mytools.slactrac as sltr
 import shlex, subprocess
 import os, string
-import ButterflyEmittance as bt
+import ButterflyEmittancePython as bt
 
 plt.close('all')
 
