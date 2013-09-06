@@ -19,23 +19,26 @@ elepath = elefile[:string.find(elefile,'.ele')]
 command = "elegant "
 command = ''.join([command,' ',elefile])
 # command = "elegant drift.ele"
-# args = shlex.split(command)
+print(command)
+args = shlex.split(command)
 # p = subprocess.Popen(args)
 # p.wait()
 
-out = st.loadpage('drift.out')
-# x = st.sdds2array(out,'x') * 1000
-# y = st.sdds2array(out,'y') * 1000
-x = st.sdds2array(out,'x')
-y = st.sdds2array(out,'y')
-d = st.sdds2array(out,'d')
+print('Finished elegant.')
+
+page = st.loadpage('drift.out')
+# x = st.sdds2array(page,'x') * 1000
+# y = st.sdds2array(page,'y') * 1000
+x = st.sdds2array(page,'x')
+y = st.sdds2array(page,'y')
+d = st.sdds2array(page,'d')
 res = 100
 
 # Y Dispersion {{{
 figdisp= plt.figure()
 top='Dispersion at Measurement'
 mt.hist2d(y*1e3,(d+1),labels=[top,'y [mm]','$E/E_0$'],bins=res,fig=figdisp)
-mt.graphics.savefig(top,elepath)
+# mt.graphics.savefig(top,elepath)
 # plt.close(figdisp)
 #}}}
 
@@ -43,7 +46,7 @@ mt.graphics.savefig(top,elepath)
 figspec = plt.figure()
 top='Simulated Energy Measurement\nNOT PHYSICAL'
 mt.hist2d(x*1e6,(d+1),labels=[top,'x [$\mu$m]','$E/E_0$'],bins=res,fig=figspec)
-mt.graphics.savefig(top,elepath)
+# mt.graphics.savefig(top,elepath)
 # plt.close(figspec)
 #}}}
 
@@ -51,7 +54,7 @@ mt.graphics.savefig(top,elepath)
 figcher = plt.figure()
 top='Simulated Cherenkov Measurement'
 mt.hist2d(x*1e6,y*1e6,labels=[top,'x [$\mu$m]','y [$\mu$m]'],bins=res,fig=figcher)
-mt.graphics.savefig(top,elepath)
+# mt.graphics.savefig(top,elepath)
 plt.close(figcher)
 #}}}
 
