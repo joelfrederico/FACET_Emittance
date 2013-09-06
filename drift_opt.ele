@@ -39,7 +39,7 @@
 &end
 
 &optimization_term
-	term = ,
+	term = betax,
 	verbose = 1,
 	weight = 1
 &end
