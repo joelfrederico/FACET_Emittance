@@ -1,0 +1,239 @@
+&run_setup
+	lattice                  = "drift.lte",
+	use_beamline             = "mainbeamlineNOMAG",
+	output                   = %s.out,
+	! centroid                 = %s.cen,
+	! sigma                    = %s.sig,
+	! final                    = %s.fin,
+	! acceptance               = %s.acceptance,
+	! losses                   = %s.lost,
+	! magnets                  = %s.mag,
+	! parameters               = %s.par,
+	combine_bunch_statistics = 0,
+	default_order            = 2,
+	print_statistics         = 1,
+	random_number_seed       = 98765432,
+	! expand_for               = "NRTL_input_binary.sdds",
+	! expand_for               = "ramp.out",
+	p_central                = 40000
+	tracking_updates         = 1,
+	load_balancing_on        = 0
+&end
+
+&run_control
+	n_steps                  = 1
+&end
+
+&twiss_output
+	filename     = %s.twi,
+	matched      = 0,
+	beta_x       = 59.0700927e-3,
+	beta_y       = 59.0700927e-3,
+	alpha_x      = -0.7705554,
+	alpha_y      = -0.7705554,
+	eta_x        = 0,
+	etap_x       = 0,
+	eta_y        = 0,
+	etap_y       = 0,
+	concat_order = 3
+&end
+
+&optimization_term
+	term = ,
+	verbose = 1,
+	weight = 1
+&end
+&optimization_term
+	term = betay,
+	verbose = 1,
+	weight = 10
+
+&end
+
+&optimization_setup
+	mode = "minimize",
+	method = "simplex"
+&end
+
+! &parallel_optimization_setup
+!     mode = "minimize",
+!     method = "simplex"
+! &end
+
+&optimization_variable
+	name = "QS1",
+	item = "K1",
+	step_size = 1e-2
+&end
+&optimization_variable
+	name = QS2,
+	item = K1,
+	step_size = 1e-2
+&end
+
+&bunched_beam
+	bunch                    = %s.bun,
+	n_particles_per_bunch    = 100000,
+	! emit_x                   = 1.715650e-9
+	! emit_y                   = 1.715650e-9
+	emit_nx                  = 130e-6
+	emit_ny                  = 130e-6
+	beta_x       = 59.0700927e-3,
+	beta_y       = 59.0700927e-3,
+	alpha_x      = -0.7705554,
+	alpha_y      = -0.7705554,
+	! emit_nx                  = 77.2e-6,
+	! emit_ny                  = 77.2e-6,
+	! use_twiss_command_values = 1,
+	Po                       = 40000,
+	sigma_dp                 = 0.01,
+	! sigma_dp                 = 0,
+	sigma_s                  = 3e-6,
+	dp_s_coupling            = 0,
+	momentum_chirp           = 0,
+	one_random_bunch         = 1,
+&end
+
+! &sdds_beam
+!     input="ramp.out",
+!     ! input="NRTL_input_binary.sdds",
+!     ! center_transversely=1,
+!     ! center_arrival_time=1
+! &end
+
+&matrix_output
+	printout=%s.mpr,
+	printout_order=2,
+	SDDS_output=%s.mat,
+	SDDS_output_order=2,
+	individual_matrices=0
+&end
+
+&optimize
+	summarize_setup = 1
+&end
+
+&save_lattice
+	filename = %s.new
+&end
+
+&run_setup
+	lattice                  = "drift_opt.new",
+	use_beamline             = "mainbeamline",
+	output                   = %s.out,
+	! centroid                 = %s.cen,
+	! sigma                    = %s.sig,
+	! final                    = %s.fin,
+	! acceptance               = %s.acceptance,
+	! losses                   = %s.lost,
+	! magnets                  = %s.mag,
+	! parameters               = %s.par,
+	combine_bunch_statistics = 0,
+	default_order            = 2,
+	print_statistics         = 1,
+	random_number_seed       = 98765432,
+	! expand_for               = "NRTL_input_binary.sdds",
+	! expand_for               = "ramp.out",
+	p_central                = 40000
+	tracking_updates         = 1,
+	load_balancing_on        = 0
+&end
+
+&run_control
+	n_steps                  = 1
+&end
+
+! &alter_elements
+!     name           = "QS*",
+!     item           = "K1",
+!     value          = 0.977,
+!     multiplicative = 1
+! &end
+! &alter_elements
+!         name           = "B5D36",
+!         item           = "ANGLE",
+!         value          = 40E-3
+! &end
+
+&twiss_output
+	filename     = %s.twi,
+	matched      = 0,
+	beta_x       = 59.0700927e-3,
+	beta_y       = 59.0700927e-3,
+	alpha_x      = -0.7705554,
+	alpha_y      = -0.7705554,
+	eta_x        = 0,
+	etap_x       = 0,
+	eta_y        = 0,
+	etap_y       = 0,
+	concat_order = 3
+&end
+
+&optimization_term
+	term = betax,
+	verbose = 1
+&end
+&optimization_term
+	term = betay,
+	verbose = 1
+&end
+
+&optimization_setup
+	mode = "minimize",
+	method = "simplex"
+&end
+
+&optimization_variable
+	name = "QS1",
+	item = "K1",
+	step_size = 1e-2
+&end
+&optimization_variable
+	name = QS2,
+	item = K1,
+	step_size = 1e-2
+&end
+
+&bunched_beam
+	bunch                    = %s.bun,
+	n_particles_per_bunch    = 100000,
+	! emit_x                   = 1.715650e-9
+	! emit_y                   = 1.715650e-9
+	emit_nx                  = 130e-6
+	emit_ny                  = 130e-6
+	beta_x       = 59.0700927e-3,
+	beta_y       = 59.0700927e-3,
+	alpha_x      = -0.7705554,
+	alpha_y      = -0.7705554,
+	! emit_nx                  = 77.2e-6,
+	! emit_ny                  = 77.2e-6,
+	! use_twiss_command_values = 1,
+	Po                       = 40000,
+	sigma_dp                 = 0.01,
+	! sigma_dp                 = 0,
+	sigma_s                  = 3e-6,
+	dp_s_coupling            = 0,
+	momentum_chirp           = 0,
+	one_random_bunch         = 1,
+&end
+
+! &sdds_beam
+!     input="ramp.out",
+!     ! input="NRTL_input_binary.sdds",
+!     ! center_transversely=1,
+!     ! center_arrival_time=1
+! &end
+
+&matrix_output
+	printout=%s.mpr,
+	printout_order=2,
+	SDDS_output=%s.mat,
+	SDDS_output_order=2,
+	individual_matrices=0
+&end
+
+&track
+&end
+
+&stop
+&end
