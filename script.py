@@ -21,8 +21,8 @@ command = ''.join([command,' ',elefile])
 # command = "elegant drift.ele"
 print(command)
 args = shlex.split(command)
-# p = subprocess.Popen(args)
-# p.wait()
+p = subprocess.Popen(args)
+p.wait()
 
 print('Finished elegant.')
 
