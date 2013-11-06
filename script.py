@@ -166,7 +166,11 @@ out=bt.histcher(x,y,res)
 stddevsq = bt.getstd(res,h,xval)
 
 out = bt.fitbowtie(beamline,davg,stddevsq,filt,T,twiss,emitx)
-[spotexpected,X,beta] = out
+# [spotexpected,X,beta] = out
+spotexpected = out.spotexpected
+X            = out.X
+beta         = out.beta
+covar = out.covar
 
 figcher=plt.figure()
 top='Simulated Cherenkov Emittance Measurement'
@@ -182,7 +186,11 @@ out = bt.histenergy(x,d,res)
 stddevsq = bt.getstd(res,h,xval)
 
 out = bt.fitbowtie(beamline,davg,stddevsq,filt,T,twiss,emitx)
-[spotexpected,X,beta] = out
+# [spotexpected,X,beta] = out
+spotexpected = out.spotexpected
+X            = out.X
+beta         = out.beta
+covar = out.covar
 
 figenergy=plt.figure()
 top='Simulated Energy Emittance Measurement\nNOT PHYSICAL'
