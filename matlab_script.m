@@ -1,40 +1,16 @@
 % function out = emittance_measure_ss(c,x_min,x_max,y_min,y_max)
-function out = emittance_measure_ss(data,camname,uid)
+function out = matlab_script(data,wanted_UIDs,imgstruct)
 	global data
 	
-	% % Usual data
-	% day = '20130428';
-	% data_set = 'E200_10849';
-
-	% if isempty(data)
-	% 	pathstr=['/nas/nas-li20-pm01/E200/2013/' day '/' data_set '/']
-	% 	
-	% 	data=E200_load_data(pathstr);
-	% end
-
-	% ====================================
-	% Wanted UIDs
-	% ====================================
-	% bool    = (data.raw.scalars.step_num.dat==3);
-	% imguids = intersect(imgstruct.UID,data.raw.scalars.step_num.UID(bool));
-	wanted_UIDs=data.raw.images.CELOSS.UID(c);
-
-	% ====================================
-	% Get step_value
-	% ====================================
-	% step_struct = data.raw.scalars.step_value;
-	% [this,bool] = ismember(wanted_UIDs,step_struct.UID);
-	% delE        = step_struct.dat(bool);
 	delE =0;
-	% display(delE)
 	
 	% ====================================
 	% Load the desired image
 	% ====================================
-	imgstruct=data.raw.images.CELOSS;
 	[imgs,bg]=E200_load_images(imgstruct,wanted_UIDs,data);
-	[this,bool] = ismember(wanted_UIDs,imgstruct.UID);
-	res         = imgstruct.RESOLUTION(bool);
+	% [this,bool] = ismember(wanted_UIDs,imgstruct.UID);
+	% res         = imgstruct.RESOLUTION(bool);
+	res = E200_api_getdat(imgstruct.RESOLUTION,wanted_UIDs)
 	
 	% ====================================
 	% Manipulate image to plot correctly
