@@ -1,41 +1,44 @@
-function out = matlab_script(c,x_min,x_max,y_min,y_max)
+% function out = emittance_measure_ss(c,x_min,x_max,y_min,y_max)
+function out = emittance_measure_ss(data,camname,uid)
 	global data
 	
-	% Usual data
-	day = '20130428';
-	data_set = 'E200_10849';
+	% % Usual data
+	% day = '20130428';
+	% data_set = 'E200_10849';
 
-	% Hunt for clean, no-oven data
-	% day = '20130427'
-	% data_set = 'E200_10755';
-	if isempty(data)
-	
-		% day = '20130429';
-		% data_set = 'E200_10911';
-		pathstr=['/nas/nas-li20-pm01/E200/2013/' day '/' data_set '/']
-		
-		data=E200_load_data(pathstr);
-	end
+	% if isempty(data)
+	% 	pathstr=['/nas/nas-li20-pm01/E200/2013/' day '/' data_set '/']
+	% 	
+	% 	data=E200_load_data(pathstr);
+	% end
 
+	% ====================================
 	% Wanted UIDs
+	% ====================================
 	% bool    = (data.raw.scalars.step_num.dat==3);
 	% imguids = intersect(imgstruct.UID,data.raw.scalars.step_num.UID(bool));
 	wanted_UIDs=data.raw.images.CELOSS.UID(c);
 
+	% ====================================
 	% Get step_value
+	% ====================================
 	% step_struct = data.raw.scalars.step_value;
 	% [this,bool] = ismember(wanted_UIDs,step_struct.UID);
 	% delE        = step_struct.dat(bool);
 	delE =0;
 	% display(delE)
 	
+	% ====================================
 	% Load the desired image
+	% ====================================
 	imgstruct=data.raw.images.CELOSS;
 	[imgs,bg]=E200_load_images(imgstruct,wanted_UIDs,data);
 	[this,bool] = ismember(wanted_UIDs,imgstruct.UID);
 	res         = imgstruct.RESOLUTION(bool);
 	
+	% ====================================
 	% Manipulate image to plot correctly
+	% ====================================
 	img_sub=imgs{1}-uint16(bg{1});
 	% img_sub=imgs{1};
 	img=img_sub;
@@ -46,7 +49,10 @@ function out = matlab_script(c,x_min,x_max,y_min,y_max)
 	plotimg=img;
 	% size(img)
 	
-	% Determine spectrometer bend settings/calibration
+	% ====================================
+	% Determine spectrometer 
+	% bend settings/calibration
+	% ====================================
 	bend_struct = data.raw.scalars.LI20_LGPS_3330_BDES;
 	bool        = ismember(wanted_UIDs,bend_struct.UID);
 	% display(bend_struct.UID)
@@ -54,7 +60,9 @@ function out = matlab_script(c,x_min,x_max,y_min,y_max)
 	% display(B5D36);
 	e_axis=E200_cher_get_E_axis('20130423','CELOSS',0,[1:1392],0,B5D36);
 
+	% ====================================
 	% Plot Image
+	% ====================================
 	close('all');
 	cmap  = custom_cmap();
 	colormap(cmap.wbgyr);
@@ -63,9 +71,6 @@ function out = matlab_script(c,x_min,x_max,y_min,y_max)
 	% size(plotimg)
 	fig = imagesc(plotimg,[0,immax]);
 	out = fig;
-end
-
-function temp()
 
 	fig    = imagesc(plotimg(y_min:y_max,x_min:x_max),[0,immax]);
 	% fig   = surf(double(plotimg(y_min:y_max,x_min:x_max)));
@@ -83,7 +88,9 @@ function temp()
 	% pcolor([1:size(img,2)],e_axis,img);
 	% shading('flat');
 
+	% ====================================
 	% Create a histogram of std dev
+	% ====================================
 	n_rows    = 10;
 	hist_vec  = [y_min:n_rows:y_max];
 	n_groups  = length(hist_vec);
@@ -128,7 +135,9 @@ function temp()
 	% plot(hist_data(:,1),hist_data(:,2)*(10^3)^2,'-o');
 	% tilefigs;
 	
+	% ====================================
 	% Save for python loading
+	% ====================================
 	save('forpython.mat','img','img_sub','hist_data','B5D36','processed_data','-v7');
 
 	setenv('DYLD_LIBRARY_PATH', '/usr/local/bin:/opt/local/lib:');
