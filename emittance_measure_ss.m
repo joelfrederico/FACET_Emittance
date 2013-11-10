@@ -26,8 +26,8 @@ function emittance_measure_ss(handles)
 	% ====================================
 	% Get BDES's
 	% ====================================
-	qs1_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3261_BDES,uid)
-	qs2_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3311_BDES,uid)
+	qs1_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3261_BDES,uid);
+	qs2_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3311_BDES,uid);
 
 	% matlab_script(handles.data,img);
 end
