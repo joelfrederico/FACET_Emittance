@@ -1,5 +1,6 @@
 % function out = emittance_measure_ss(c,x_min,x_max,y_min,y_max)
 function out = matlab_script(data,wanted_UIDs,imgstruct)
+	close('all');
 	global data
 	
 	delE =0;
@@ -10,7 +11,8 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	[imgs,bg]=E200_load_images(imgstruct,wanted_UIDs,data);
 	% [this,bool] = ismember(wanted_UIDs,imgstruct.UID);
 	% res         = imgstruct.RESOLUTION(bool);
-	res = E200_api_getdat(imgstruct.RESOLUTION,wanted_UIDs)
+	% res = imgstruct.RESOLUTION(imgstruct.UID==wanted_UIDs);
+	res = 10.3934;
 	
 	% ====================================
 	% Manipulate image to plot correctly
@@ -19,11 +21,17 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	% img_sub=imgs{1};
 	img=img_sub;
 	% img=rot90(img);
-	img=transpose(img);
-	img=fliplr(img);
+	% img=transpose(img);
+	% img=fliplr(img);
 	plotimg=log10(double(img));
 	plotimg=img;
 	% size(img)
+
+	% ====================================
+	% Get yvec for energy
+	% ====================================
+	[ysize,xsize] = size(img);
+	yvec = 1:ysize;
 	
 	% ====================================
 	% Determine spectrometer 
@@ -34,21 +42,34 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	% display(bend_struct.UID)
 	B5D36 = bend_struct.dat{1};
 	% display(B5D36);
-	e_axis=E200_cher_get_E_axis('20130423','CELOSS',0,[1:1392],0,B5D36);
+	% e_axis=E200_cher_get_E_axis('20130423','CELOSS',0,[1:1392],0,B5D36);
+	e_axis = E200_cam_E_cal(data,yvec);
+	plot(e_axis);
+	figure;
 
+	% ====================================
+	% Get zoom region, 2% bandwidth
+	% ====================================
+	E0 = 20.35;
+	bandE = 0.01*E0;
+	Emin = E0-bandE
+	Emax = E0+bandE
+	y_min = yvec(sum(e_axis<Emin))
+	y_max = yvec(sum(e_axis<Emax))
+	x_min = 0
+	x_max = xsize
+	
 	% ====================================
 	% Plot Image
 	% ====================================
-	close('all');
 	cmap  = custom_cmap();
 	colormap(cmap.wbgyr);
 	% colormap(gray)
 	immax = max(max(plotimg));
 	% size(plotimg)
 	fig = imagesc(plotimg,[0,immax]);
-	out = fig;
 
-	fig    = imagesc(plotimg(y_min:y_max,x_min:x_max),[0,immax]);
+	% fig    = imagesc(plotimg(y_min:y_max,x_min:x_max),[0,immax]);
 	% fig   = surf(double(plotimg(y_min:y_max,x_min:x_max)));
 	y_int  = round((y_max-y_min)/10);
 	y_vec  = [y_min:y_int:y_max];
