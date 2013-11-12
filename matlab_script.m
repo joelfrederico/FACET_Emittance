@@ -43,7 +43,7 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	B5D36 = bend_struct.dat{1};
 	% display(B5D36);
 	% e_axis=E200_cher_get_E_axis('20130423','CELOSS',0,[1:1392],0,B5D36);
-	e_axis = E200_cam_E_cal(data,yvec);
+	e_axis = E200_cam_E_cal(data,yvec,res);
 	plot(e_axis);
 	figure;
 
