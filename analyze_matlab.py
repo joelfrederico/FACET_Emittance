@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import argparse
 import numpy as np
 import scipy.io as sio
@@ -16,6 +15,9 @@ def analyze(infile):
 	img_sub        = matvars['img_sub']
 	hist_data      = matvars['hist_data']
 	B5D36_en       = matvars['B5D36']
+
+	# plt.imshow(img_sub)
+	# plt.show()
 
 	sum_x     = processed_data['sum_x'][0,0]
 	sum_y     = processed_data['sum_y'][0,0]
@@ -37,10 +39,13 @@ def analyze(infile):
 	variance  = np.zeros(num_pts)
 	stddev    = np.zeros(num_pts)
 	varerr    = np.zeros(num_pts)
+	print varerr.shape
 	chisq_red = np.zeros(num_pts)
 	for i,el in enumerate(sum_x):
 		y                   = sum_x[i,:]
-		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=np.sqrt(y),plot=False,variance_bool=True,verbose=False)
+		erry = np.sqrt(y)
+		erry[erry==0] = 1.1
+		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=np.sqrt(y),plot=True,variance_bool=True,verbose=False)
 		variance[i]         = popt[2]
 		varerr[i]           = pcov[2,2]
 		stddev[i]           = np.sqrt(pcov[2,2])
@@ -153,7 +158,7 @@ def analyze(infile):
 	bt.plotfit(filt,davg,variance,beta,out.X_unweighted,spotexpected,top,error=used_error)
 
 	figchisquare = plt.figure()
-	# plt.plot(davg,chisq_red)
+	plt.plot(davg,chisq_red)
 	mt.plot_featured(davg,chisq_red,'.-',
 			toplabel='Chi-Squared for Each Gaussian Fit',
 			xlabel='$E/E_0$',

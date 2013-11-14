@@ -56,7 +56,7 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	Emax = E0+bandE
 	y_min = yvec(sum(e_axis<Emin))
 	y_max = yvec(sum(e_axis<Emax))
-	x_min = 0
+	x_min = 200
 	x_max = xsize
 	
 	% ====================================
@@ -69,7 +69,8 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	% size(plotimg)
 	fig = imagesc(plotimg,[0,immax]);
 
-	% fig    = imagesc(plotimg(y_min:y_max,x_min:x_max),[0,immax]);
+	figure;
+	fig    = imagesc(plotimg(y_min:y_max,x_min:x_max),[0,immax]);
 	% fig   = surf(double(plotimg(y_min:y_max,x_min:x_max)));
 	y_int  = round((y_max-y_min)/10);
 	y_vec  = [y_min:y_int:y_max];
@@ -94,7 +95,7 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	hist_data = zeros(n_groups,2);
 	% length(hist_vec)
 	x_pix     = [x_min:x_max];
-	x_meter   = (x_pix-mean(x_pix)) * res * 10^-6;
+	x_meter   = (x_pix-mean(x_pix)) * res * 10^-6 / sqrt(2);
 	x_sq      = x_meter.^2;
 	% size(x_sq)
 
@@ -107,11 +108,14 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	processed_data.n_groups = n_groups;
 	processed_data.sum_x    = zeros(n_groups,x_max-x_min+1);
 	processed_data.sum_y    = zeros(n_groups,11);
+	qs1_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3261_BDES,wanted_UIDs);
+	qs2_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3311_BDES,wanted_UIDs);
 	
-	size(processed_data.sum_x)
+	% size(processed_data.sum_x)
 	for i=1:n_groups
 		y_pix_vec = [hist_vec(i):hist_vec(i)+n_rows];
-		subimg = transpose(img(y_pix_vec,x_min:x_max));
+		x_pix_vec = x_min:x_max;
+		subimg = transpose(img(y_pix_vec,x_pix_vec));
 		subimg_x = sum(subimg,2);
 		subimg_y = sum(subimg,1);
 
@@ -128,16 +132,24 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 		hist_data(i,1) = subimg_y*transpose(e_axis(y_pix_vec))/sum(subimg_y);
 	end
 	
-	% figure;
+	figure;
+	imagesc(img(y_pix_vec,x_pix_vec));
 	% plot(hist_data(:,1),hist_data(:,2)*(10^3)^2,'-o');
 	% tilefigs;
 	
 	% ====================================
 	% Save for python loading
 	% ====================================
-	save('forpython.mat','img','img_sub','hist_data','B5D36','processed_data','-v7');
+	curpath = pwd();
+	savefile = fullfile(curpath,'tempfiles','forpython.mat');
+	save(savefile,'img','img_sub','hist_data','B5D36','processed_data','-v7');
 
-	setenv('DYLD_LIBRARY_PATH', '/usr/local/bin:/opt/local/lib:');
-	% unix('source ~/.profile; ./analyze_matlab.py forpython.mat -v');
+	set_profile = 'source /home/fphysics/.bashrc ; source /home/fphysics/bin/WHO';
+	set_PYTHONPATH = 'export PYTHONPATH=/home/fphysics/joelfred/E200_DRT/aux_functions:$PYTHONPATH;';
+
+	env_setup = [set_profile ' joelfred;' set_PYTHONPATH];
+
+	% Must ssh thanks to Matlab not handling LD_LIBRARY_PATHS correctly at the moment.
+	unix(['ssh -X facet-srv20 ''' env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile ' -v''']);
 	out=data;
 end
