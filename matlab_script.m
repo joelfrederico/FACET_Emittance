@@ -1,14 +1,13 @@
 % function out = emittance_measure_ss(c,x_min,x_max,y_min,y_max)
-function out = matlab_script(data,wanted_UIDs,imgstruct)
-	close('all');
-	global data
+function out = matlab_script(data,wanted_UIDs,img_sub)
+	% close('all');
 	
 	delE =0;
 	
 	% ====================================
 	% Load the desired image
 	% ====================================
-	[imgs,bg]=E200_load_images(imgstruct,wanted_UIDs,data);
+	% [imgs,bg]=E200_load_images(imgstruct,wanted_UIDs,data);
 	% [this,bool] = ismember(wanted_UIDs,imgstruct.UID);
 	% res         = imgstruct.RESOLUTION(bool);
 	% res = imgstruct.RESOLUTION(imgstruct.UID==wanted_UIDs);
@@ -17,7 +16,7 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	% ====================================
 	% Manipulate image to plot correctly
 	% ====================================
-	img_sub=imgs{1}-uint16(bg{1});
+	% img_sub=imgs{1}-uint16(bg{1});
 	% img_sub=imgs{1};
 	img=img_sub;
 	% img=rot90(img);
@@ -37,27 +36,27 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	% Determine spectrometer 
 	% bend settings/calibration
 	% ====================================
-	bend_struct = data.raw.scalars.LI20_LGPS_3330_BDES;
-	bool        = ismember(wanted_UIDs,bend_struct.UID);
+	% bend_struct = data.raw.scalars.LI20_LGPS_3330_BDES;
+	% bool        = ismember(wanted_UIDs,bend_struct.UID);
 	% display(bend_struct.UID)
-	B5D36 = bend_struct.dat{1};
+	% B5D36 = bend_struct.dat{1};
 	% display(B5D36);
 	% e_axis=E200_cher_get_E_axis('20130423','CELOSS',0,[1:1392],0,B5D36);
 	e_axis = E200_cam_E_cal(data,yvec,res);
-	plot(e_axis);
-	figure;
+	e_axis = fliplr(e_axis);
+	% plot(e_axis);
 
 	% ====================================
 	% Get zoom region, 2% bandwidth
 	% ====================================
 	E0 = 20.35;
 	bandE = 0.01*E0;
-	Emin = E0-bandE
-	Emax = E0+bandE
-	y_min = yvec(sum(e_axis<Emin))
-	y_max = yvec(sum(e_axis<Emax))
-	x_min = 200
-	x_max = xsize
+	Emin = E0-bandE;
+	Emax = E0+bandE;
+	y_min = yvec(sum(e_axis<Emin));
+	y_max = yvec(sum(e_axis<Emax));
+	x_min = 200;
+	x_max = xsize;
 	
 	% ====================================
 	% Plot Image
@@ -67,10 +66,23 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	% colormap(gray)
 	immax = max(max(plotimg));
 	% size(plotimg)
-	fig = imagesc(plotimg,[0,immax]);
+	% fig = figure;
+	% imagesc(plotimg,[0,immax]);
 
-	figure;
-	fig    = imagesc(plotimg(y_min:y_max,x_min:x_max),[0,immax]);
+		yticks = 1:round(ysize/5):ysize;
+		% yticklabels = (-ymean*res:ysize*res/5:ymean*res)/10^3;
+		yticklabels = e_axis(1:round(ysize/5):ysize);
+		yticklabelstr = {};
+		for i=1:size(yticklabels,2)
+			yticklabelstr = [yticklabelstr sprintf('%03.2f',yticklabels(i))];
+		end
+		% display(yticklabels)
+		% display(yticklabelstr)
+		set(gca,'YTick',yticks);
+		set(gca,'YTickLabel',yticklabelstr);
+
+	% figure;
+	% fig    = imagesc(plotimg(y_min:y_max,x_min:x_max),[0,immax]);
 	% fig   = surf(double(plotimg(y_min:y_max,x_min:x_max)));
 	y_int  = round((y_max-y_min)/10);
 	y_vec  = [y_min:y_int:y_max];
@@ -108,8 +120,12 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	processed_data.n_groups = n_groups;
 	processed_data.sum_x    = zeros(n_groups,x_max-x_min+1);
 	processed_data.sum_y    = zeros(n_groups,11);
-	qs1_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3261_BDES,wanted_UIDs);
-	qs2_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3311_BDES,wanted_UIDs);
+	% qs1_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3261_BDES,wanted_UIDs);
+	% qs2_bdes = E200_api_getdat(data.raw.scalars.LI20_LGPS_3311_BDES,wanted_UIDs);
+	% processed_data.qs1_k_half = BtoK(qs1_bdes,20.35,0.5)
+	% processed_data.qs2_k_half = BtoK(qs2_bdes,20.35,0.5)
+	processed_data.qs1_k_half = 3.077225846087095e-01;
+	processed_data.qs2_k_half = -2.337527121004531e-01;
 	
 	% size(processed_data.sum_x)
 	for i=1:n_groups
@@ -132,8 +148,8 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 		hist_data(i,1) = subimg_y*transpose(e_axis(y_pix_vec))/sum(subimg_y);
 	end
 	
-	figure;
-	imagesc(img(y_pix_vec,x_pix_vec));
+	% figure;
+	% imagesc(img(y_pix_vec,x_pix_vec));
 	% plot(hist_data(:,1),hist_data(:,2)*(10^3)^2,'-o');
 	% tilefigs;
 	
@@ -142,7 +158,7 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	% ====================================
 	curpath = pwd();
 	savefile = fullfile(curpath,'tempfiles','forpython.mat');
-	save(savefile,'img','img_sub','hist_data','B5D36','processed_data','-v7');
+	save(savefile,'img','img_sub','hist_data','processed_data','-v7');
 
 	set_profile = 'source /home/fphysics/.bashrc ; source /home/fphysics/bin/WHO';
 	set_PYTHONPATH = 'export PYTHONPATH=/home/fphysics/joelfred/E200_DRT/aux_functions:$PYTHONPATH;';
@@ -150,6 +166,7 @@ function out = matlab_script(data,wanted_UIDs,imgstruct)
 	env_setup = [set_profile ' joelfred;' set_PYTHONPATH];
 
 	% Must ssh thanks to Matlab not handling LD_LIBRARY_PATHS correctly at the moment.
-	unix(['ssh -X facet-srv20 ''' env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile ' -v''']);
+	% unix(['ssh -X facet-srv20 ''' env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile ' -v''']);
+	unix(['ssh -X facet-srv20 ''' env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile '''']);
 	out=data;
 end

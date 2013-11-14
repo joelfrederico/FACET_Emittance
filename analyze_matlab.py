@@ -14,18 +14,22 @@ def analyze(infile):
 	processed_data = matvars['processed_data']
 	img_sub        = matvars['img_sub']
 	hist_data      = matvars['hist_data']
-	B5D36_en       = matvars['B5D36']
-
-	# plt.imshow(img_sub)
-	# plt.show()
+	# B5D36_en       = matvars['B5D36']
 
 	sum_x     = processed_data['sum_x'][0,0]
 	sum_y     = processed_data['sum_y'][0,0]
 	x_meter   = processed_data['x_meter'][0,0]
-	B5D36_en  = B5D36_en.item(0)
-	new_en    = (B5D36_en-4.3)
+	qs1_k_half = processed_data['qs1_k_half']
+	qs2_k_half = processed_data['qs2_k_half']
+
+	print qs1_k_half
+	print qs2_k_half
+
+	# B5D36_en  = B5D36_en.item(0)
+	# new_en    = (B5D36_en-4.3)
+	B5D36_en  = 20.35
 	gamma     = (B5D36_en/0.5109989)*1e3
-	new_gamma = (new_en/0.5109989)*1e3
+	# new_gamma = (new_en/0.5109989)*1e3
 
 	# Translate into script params
 	davg         = (hist_data[:,0]/16.05-1)
@@ -72,12 +76,14 @@ def analyze(infile):
 	LIPOTR2TOR = sltr.Drift(length = 4.9266E+00)
 	LTOR2QS1 = sltr.Drift(length = 0.5E+00)
 	# QS1     : QUAD,L= 5.000000000E-01,K1= 3.077225846087095e-01,ORDER=2, DY=5.0e-30, DX=1.0e-30
-	QS1 = sltr.Quad(length= 5.000000000E-01,K1= 3.077225846087095e-01)
-	QS1._change_E(gamma,new_gamma)
+	# QS1 = sltr.Quad(length= 5.000000000E-01,K1= 3.077225846087095e-01)
+	QS1 = sltr.Quad(length= 5.000000000E-01,K1= qs1_k_half)
+	# QS1._change_E(gamma,new_gamma)
 	LQS12QS2 = sltr.Drift(length = 4.00E+00)
 	# QS2     : QUAD,L= 5.000000000E-01,K1=-2.337527121004531e-01, ORDER=2
-	QS2 = sltr.Quad(length= 5.000000000E-01,K1=-2.337527121004531e-01)
-	QS2._change_E(gamma,new_gamma)
+	# QS2 = sltr.Quad(length= 5.000000000E-01,K1=-2.337527121004531e-01)
+	QS2 = sltr.Quad(length= 5.000000000E-01,K1=qs2_k_half)
+	# QS2._change_E(gamma,new_gamma)
 	LQS22BEND = sltr.Drift(length = 0.7428E+00)
 	# B5D36_1 : CSBEN,L= 4.889500000E-01,          &
 	#                ANGLE= 3.0E-03, 	     &
@@ -122,7 +128,7 @@ def analyze(infile):
 			)
 
 	beamline.calc_mat()
-	beamline.change_energy(new_gamma);
+	# beamline.change_energy(new_gamma);
 	# for el in beamline.elements:
 	#         print '---------------'
 	#         print 'Energy of {} = {}'.format(el._type,el._gamma)

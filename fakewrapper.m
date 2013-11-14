@@ -2,7 +2,9 @@ global gdata
 
 uids = E200_api_getUID(gdata.raw.scalars.step_num,6);
 uids = intersect(gdata.raw.images.CEGAIN.UID,uids);
+
 wanted_UIDs = uids(32);
+% qs1_bdes = E200_api_getdat(gdata.raw.scalars.LI20_LGPS_3261_BDES,wanted_UIDs);
 
 imgstruct = gdata.raw.images.CEGAIN;
 
