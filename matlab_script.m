@@ -66,8 +66,8 @@ function out = matlab_script(data,wanted_UIDs,img_sub)
 	% colormap(gray)
 	immax = max(max(plotimg));
 	% size(plotimg)
-	% fig = figure;
-	% imagesc(plotimg,[0,immax]);
+	fig = figure;
+	imagesc(plotimg,[0,immax]);
 
 		yticks = 1:round(ysize/5):ysize;
 		% yticklabels = (-ymean*res:ysize*res/5:ymean*res)/10^3;
@@ -148,8 +148,8 @@ function out = matlab_script(data,wanted_UIDs,img_sub)
 		hist_data(i,1) = subimg_y*transpose(e_axis(y_pix_vec))/sum(subimg_y);
 	end
 	
-	% figure;
-	% imagesc(img(y_pix_vec,x_pix_vec));
+	figure;
+	imagesc(img(y_pix_vec,x_pix_vec));
 	% plot(hist_data(:,1),hist_data(:,2)*(10^3)^2,'-o');
 	% tilefigs;
 	
@@ -160,13 +160,11 @@ function out = matlab_script(data,wanted_UIDs,img_sub)
 	savefile = fullfile(curpath,'tempfiles','forpython.mat');
 	save(savefile,'img','img_sub','hist_data','processed_data','-v7');
 
-	set_profile = 'source /home/fphysics/.bashrc ; source /home/fphysics/bin/WHO';
-	set_PYTHONPATH = 'export PYTHONPATH=/home/fphysics/joelfred/E200_DRT/aux_functions:$PYTHONPATH;';
-
+	% ====================================
+	% Run python in unix.
+	% ====================================
 	env_setup = [set_profile ' joelfred;' set_PYTHONPATH];
+	unix([env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile ' -v']);
 
-	% Must ssh thanks to Matlab not handling LD_LIBRARY_PATHS correctly at the moment.
-	% unix(['ssh -X facet-srv20 ''' env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile ' -v''']);
-	unix(['ssh -X facet-srv20 ''' env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile '''']);
 	out=data;
 end
