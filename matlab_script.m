@@ -161,10 +161,11 @@ function out = matlab_script(data,wanted_UIDs,img_sub)
 	save(savefile,'img','img_sub','hist_data','processed_data','-v7');
 
 	% ====================================
-	% Run python in unix.
+	% Run python analysis
 	% ====================================
+	set_PYTHONPATH = 'export PYTHONPATH=/home/fphysics/joelfred/E200_DRT/aux_functions:$PYTHONPATH;';
+	set_profile = 'source /home/fphysics/.bashrc ; source /home/fphysics/bin/WHO';
 	env_setup = [set_profile ' joelfred;' set_PYTHONPATH];
 	unix([env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile ' -v']);
-
 	out=data;
 end
