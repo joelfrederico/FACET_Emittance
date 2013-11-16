@@ -104,8 +104,9 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt):
 		       rotate=0
 		       )
 	               
-	LBEND2TABLEv2 = sltr.Drift(length = 8.855E+00)
-	LTABLE2WAFERv2 = sltr.Drift(length = 1.045E+00)
+	# LBEND2TABLEv2 = sltr.Drift(length = 8.855E+00)
+	# LTABLE2WAFERv2 = sltr.Drift(length = 1.045E+00)
+	LBEND2ELANEX = sltr.Drift(length = 8.792573)
 	
 	beamline = sltr.Beamline(
 			element_list=[
@@ -118,7 +119,7 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt):
 				LQS22BEND     ,
 				B5D36         ,
 				LBEND2TABLEv2 ,
-				LTABLE2WAFERv2
+				LBEND2ELANEX	
 				],
 			gamma= gamma
 			)
