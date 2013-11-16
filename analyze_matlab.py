@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import mytools as mt
 import copy
 
-def analyze(infile):
+def wrap_analyze(infile):
 	# Load and transfer matlab variables
 	matvars        = sio.loadmat(infile)
 	processed_data = matvars['processed_data']
@@ -37,13 +37,15 @@ def analyze(infile):
 	filt         = np.logical_not( (davg>(0.9971-1)) & (davg < (1.003-1)))
 	filt         = np.logical_or(filt, np.logical_not(filt))
 
-	# variance_old = variance
-	
+	analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt)
+
+
+def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt):
 	num_pts = len(sum_x)
 	variance  = np.zeros(num_pts)
 	stddev    = np.zeros(num_pts)
 	varerr    = np.zeros(num_pts)
-	print varerr.shape
+	# print varerr.shape
 	chisq_red = np.zeros(num_pts)
 	for i,el in enumerate(sum_x):
 		y                   = sum_x[i,:]
@@ -65,9 +67,9 @@ def analyze(infile):
 	# alphax = 6.72697997971
 
 	# Gauss fit
-	emitx = 0.001363/gamma
-	betax = 8.7
-	alphax = 5.224
+	emitx = 0.000100/gamma
+	betax = .5
+	alphax = -1 
 	gammax = (1+np.power(alphax,2))/betax
 	twiss=np.array([betax,alphax,gammax])
 	T = np.array([[betax,-alphax],[-alphax,gammax]])
@@ -107,15 +109,14 @@ def analyze(infile):
 	
 	beamline = sltr.Beamline(
 			element_list=[
-				LIPOTR2TOR    ,
-				LTOR2QS1      ,
+				IP2QS1        ,
 				QS1           ,
 				QS1           ,
 				LQS12QS2      ,
 				QS2           ,
 				QS2           ,
 				LQS22BEND     ,
-				B5D36       ,
+				B5D36         ,
 				LBEND2TABLEv2 ,
 				LTABLE2WAFERv2
 				],
@@ -167,6 +168,7 @@ def analyze(infile):
 	# print davg
 	# print chisq_red
 
+
 if __name__ == '__main__':
 
 	parser=argparse.ArgumentParser(description=
@@ -182,7 +184,7 @@ if __name__ == '__main__':
 			help='Type of fit to spot size profile. (Default: %(default)s)')
 	arg=parser.parse_args()
 
-	out=analyze(arg.inputfile)
+	out=wrap_analyze(arg.inputfile)
 	
 	if arg.verbose:
 		plt.show()
