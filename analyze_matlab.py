@@ -73,15 +73,10 @@ def analyze(infile):
 	T = np.array([[betax,-alphax],[-alphax,gammax]])
 
 	# Create Beamline {{{
-	LIPOTR2TOR = sltr.Drift(length = 4.9266E+00)
-	LTOR2QS1 = sltr.Drift(length = 0.5E+00)
-	# QS1     : QUAD,L= 5.000000000E-01,K1= 3.077225846087095e-01,ORDER=2, DY=5.0e-30, DX=1.0e-30
-	# QS1 = sltr.Quad(length= 5.000000000E-01,K1= 3.077225846087095e-01)
+	IP2QS1 = sltr.Drift(length = 5.4217)
 	QS1 = sltr.Quad(length= 5.000000000E-01,K1= qs1_k_half)
 	# QS1._change_E(gamma,new_gamma)
 	LQS12QS2 = sltr.Drift(length = 4.00E+00)
-	# QS2     : QUAD,L= 5.000000000E-01,K1=-2.337527121004531e-01, ORDER=2
-	# QS2 = sltr.Quad(length= 5.000000000E-01,K1=-2.337527121004531e-01)
 	QS2 = sltr.Quad(length= 5.000000000E-01,K1=qs2_k_half)
 	# QS2._change_E(gamma,new_gamma)
 	LQS22BEND = sltr.Drift(length = 0.7428E+00)
