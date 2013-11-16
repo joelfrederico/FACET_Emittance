@@ -58,56 +58,6 @@ mt.hist2d(x*1e6,y*1e6,labels=[top,'x [$\mu$m]','y [$\mu$m]'],bins=res,fig=figche
 plt.close(figcher)
 #}}}
 
-# # Twiss Parameters {{{
-# twiss=st.loadpage('drift.twi')
-# s = st.sdds2array(twiss,'s')
-# bx = st.sdds2array(twiss,'betax')
-# nx = st.sdds2array(twiss,'etax')*np.power(10,3)
-# ny = st.sdds2array(twiss,'etay')*np.power(10,3)
-
-# # Dispersion Measurement
-# fig4 = plt.figure()
-# # plt.plot(s,bx)
-# plt.plot(s,nx,s,ny)
-# top = 'Dispersion from Plasma Exit to Measurement'
-# mt.addlabel(top,'Distance [m]','Dispersion [mm]')
-# mt.graphics.savefig(top,elepath)
-#}}}
-
-# # Get std dev (spot size) {{{
-# def getstd(res,h,xval):
-#     stddevsq=np.zeros(res)
-#     indivbool = False
-#     if indivbool: figscan = plt.figure()
-#     
-#     def gauss(x,A,mu,sig):
-#         return A*np.exp(-np.power(x-mu,2)/(2*np.power(sig,2)))
-#     
-#     
-#     for i,row in enumerate(np.transpose(h)):
-#         A = max(row)
-#         mean = np.sum(xval*row)/row.sum()
-#         var = np.sum(np.power(xval-mean,2)*row)/row.sum()
-#         # root = np.sqrt(var)
-#         # pguess = [A,mean,root]
-#         # popt = pguess
-#         # popt, pcov = spopt.curve_fit(gauss,xval,row,pguess)
-#         # # print "A: {}, mean: {}, sig: {}".format(popt[0],popt[1],popt[2])
-#         # # print "Percent diff: {}%".format(100*(popt[2]-root)/root)
-#         # fit = gauss(xval,popt[0],popt[1],popt[2])
-#         # unchangedroot = gauss(xval,popt[0],popt[1],root)
-#         # if indivbool: plt.plot(xval,row,xval,fit,xval,unchangedroot)
-#     
-#         # # plt.plot(xval,row)
-#         # if indivbool: raw_input("Any key.")
-#         # if indivbool: figscan.clf()
-#         # # stddevsq[i] = np.power(popt[2],2)
-#         stddevsq[i] = var
-#     
-#     # stddev=np.sqrt(stddevsq)
-#     return stddevsq
-# #}}}
-
 # Simulation/Measurement
 
 # Create Beamline {{{
@@ -159,13 +109,15 @@ print 'Initial gamma should be {}.'.format(gammax)
 print '------------------------------'
 #}}}
 
+# ==============================
 # Run Cherenkov analysis {{{
+# ==============================
 out=bt.histcher(x,y,res)
-[h,xval,davg,filt] = out
+[h,xval,davg] = out
 
 stddevsq = bt.getstd(res,h,xval)
 
-out = bt.fitbowtie(beamline,davg,stddevsq,filt,T,twiss,emitx)
+out = bt.fitbowtie(beamline,davg,stddevsq,T,twiss,emitx)
 # [spotexpected,X,beta] = out
 spotexpected = out.spotexpected
 X            = out.X
@@ -174,18 +126,20 @@ covar = out.covar
 
 figcher=plt.figure()
 top='Simulated Cherenkov Emittance Measurement'
-bt.plotfit(filt,davg,np.sqrt(stddevsq),beta,X,spotexpected,top,elepath)
+bt.plotfit(davg,np.sqrt(stddevsq),beta,X,spotexpected,top,elepath)
 plt.close(figcher)
 #}}}
 
+# ==============================
 # Run energy analysis {{{
+# ==============================
 out = bt.histenergy(x,d,res)
 
-[h,xval,davg,filt] = out
+[h,xval,davg] = out
 
 stddevsq = bt.getstd(res,h,xval)
 
-out = bt.fitbowtie(beamline,davg,stddevsq,filt,T,twiss,emitx)
+out = bt.fitbowtie(beamline,davg,stddevsq,T,twiss,emitx)
 # [spotexpected,X,beta] = out
 spotexpected = out.spotexpected
 X            = out.X
@@ -194,7 +148,7 @@ covar = out.covar
 
 figenergy=plt.figure()
 top='Simulated Energy Emittance Measurement\nNOT PHYSICAL'
-bt.plotfit(filt,davg,np.sqrt(stddevsq),beta,X,spotexpected,top,elepath)
+bt.plotfit(davg,np.sqrt(stddevsq),beta,X,spotexpected,top,elepath)
 # plt.close(figenergy)
 #}}}
 

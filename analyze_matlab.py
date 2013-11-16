@@ -32,26 +32,28 @@ def wrap_analyze(infile):
 	# new_gamma = (new_en/0.5109989)*1e3
 
 	# Translate into script params
-	davg         = (hist_data[:,0]/16.05-1)
+	quadE        = 20.35
+	davg         = (hist_data[:,0]/quadE-1)
 	variance_old = hist_data[:,1]
-	filt         = np.logical_not( (davg>(0.9971-1)) & (davg < (1.003-1)))
-	filt         = np.logical_or(filt, np.logical_not(filt))
 
-	analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt)
+	analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg)
 
-
-def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt):
+def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg):
 	num_pts = len(sum_x)
 	variance  = np.zeros(num_pts)
 	stddev    = np.zeros(num_pts)
 	varerr    = np.zeros(num_pts)
 	# print varerr.shape
 	chisq_red = np.zeros(num_pts)
+	plt.figure()
 	for i,el in enumerate(sum_x):
 		y                   = sum_x[i,:]
 		erry = np.sqrt(y)
-		erry[erry==0] = 1.1
-		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=np.sqrt(y),plot=True,variance_bool=True,verbose=False)
+		erry[erry==0] = 0.3
+		# plt.plot(y)
+		# plt.show()
+		# popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=erry,plot=True,variance_bool=True,verbose=False)
+		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=np.ones(len(y)),plot=True,variance_bool=True,verbose=False)
 		variance[i]         = popt[2]
 		varerr[i]           = pcov[2,2]
 		stddev[i]           = np.sqrt(pcov[2,2])
@@ -118,7 +120,6 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt):
 				QS2           ,
 				LQS22BEND     ,
 				B5D36         ,
-				LBEND2TABLEv2 ,
 				LBEND2ELANEX	
 				],
 			gamma= gamma
@@ -149,7 +150,7 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt):
 	# chisq_factor = 63.6632188
 	used_error   = stddev*np.sqrt(chisq_factor)
 
-	out          = bt.fitbowtie(beamline,davg,variance,filt,T,twiss,emitx,error=used_error, verbose=True)
+	out          = bt.fitbowtie(beamline,davg,variance,T,twiss,emitx,error=used_error, verbose=True)
 	spotexpected = out.spotexpected
 	X            = out.X
 	beta         = out.beta
@@ -158,7 +159,7 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg,filt):
 
 	figcher=plt.figure()
 	top='Simulated Energy Emittance Measurement\nNOT PHYSICAL'
-	bt.plotfit(filt,davg,variance,beta,out.X_unweighted,spotexpected,top,error=used_error)
+	bt.plotfit(davg,variance,beta,out.X_unweighted,spotexpected,top,error=used_error)
 
 	figchisquare = plt.figure()
 	plt.plot(davg,chisq_red)

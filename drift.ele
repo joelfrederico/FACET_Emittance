@@ -89,7 +89,7 @@
 	! eta_y                    = 0,
 	! etap_y                   = 0,
 	Po                       = 40000,
-	sigma_dp                 = 0.02,
+	sigma_dp                 = 0.01,
 	! sigma_dp                 = 0,
 	! 3 mm/10 fs
 	sigma_s                  = 3e-6,
