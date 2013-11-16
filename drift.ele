@@ -73,8 +73,8 @@
 	! emit_y                   = 1.715650e-9
 	emit_nx                  = 70e-6
 	emit_ny                  = 9e-6
-	beta_x       = 0.5,
-	beta_y       = 5,
+	beta_x       = 0.1,
+	beta_y       = 1,
 	alpha_x      = 0,
 	alpha_y      = 0,
 	! emit_nx                  = 77.2e-6,
