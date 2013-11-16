@@ -40,12 +40,12 @@
 	n_steps                  = 1
 &end
 
-&alter_elements
-	name           = "QS*",
-	item           = "K1",
-	value          = 0.977,
-	multiplicative = 1
-&end
+! &alter_elements
+!         name           = "QS*",
+!         item           = "K1",
+!         value          = 0.977,
+!         multiplicative = 1
+! &end
 ! &alter_elements
 !         name           = "B5D36",
 !         item           = "ANGLE",
@@ -71,12 +71,12 @@
 	n_particles_per_bunch    = 1000000,
 	! emit_x                   = 1.715650e-9
 	! emit_y                   = 1.715650e-9
-	emit_nx                  = 130e-6
-	emit_ny                  = 130e-6
-	beta_x       = 59.0700927e-3,
-	beta_y       = 59.0700927e-3,
-	alpha_x      = -0.7705554,
-	alpha_y      = -0.7705554,
+	emit_nx                  = 70e-6
+	emit_ny                  = 9e-6
+	beta_x       = 0.5,
+	beta_y       = 5,
+	alpha_x      = 0,
+	alpha_y      = 0,
 	! emit_nx                  = 77.2e-6,
 	! emit_ny                  = 77.2e-6,
 	! use_twiss_command_values = 1,
@@ -89,7 +89,7 @@
 	! eta_y                    = 0,
 	! etap_y                   = 0,
 	Po                       = 40000,
-	sigma_dp                 = 0.01,
+	sigma_dp                 = 0.02,
 	! sigma_dp                 = 0,
 	! 3 mm/10 fs
 	sigma_s                  = 3e-6,
