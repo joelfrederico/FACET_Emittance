@@ -1,4 +1,5 @@
 .*
+java.opts
 *.cen
 *.fin
 *.log
