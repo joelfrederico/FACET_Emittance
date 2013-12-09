@@ -50,7 +50,9 @@ function out = matlab_script(data,wanted_UIDs,img_sub)
 	% Get zoom region, 2% bandwidth
 	% ====================================
 	E0 = 20.35;
-	bandE = 0.01*E0;
+	% bandE = 0.01*E0;
+	bandE = 0.008*E0;
+
 	Emin = E0-bandE;
 	Emax = E0+bandE;
 	y_min = yvec(sum(e_axis<Emin));

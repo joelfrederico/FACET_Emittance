@@ -54,6 +54,7 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg):
 		# plt.show()
 		# popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=erry,plot=True,variance_bool=True,verbose=False)
 		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=np.ones(len(y)),plot=True,variance_bool=True,verbose=False)
+		plt.show()
 		variance[i]         = popt[2]
 		varerr[i]           = pcov[2,2]
 		stddev[i]           = np.sqrt(pcov[2,2])
