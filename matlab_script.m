@@ -1,5 +1,5 @@
 % function out = emittance_measure_ss(c,x_min,x_max,y_min,y_max)
-function out = matlab_script(data,wanted_UIDs,img_sub)
+function out = matlab_script(data,img_sub)
 	% close('all');
 	
 	delE =0;

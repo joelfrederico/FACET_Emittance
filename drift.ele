@@ -71,7 +71,7 @@
 	n_particles_per_bunch    = 1000000,
 	! emit_x                   = 1.715650e-9
 	! emit_y                   = 1.715650e-9
-	emit_nx                  = 70e-6
+	emit_nx                  = 130e-6
 	emit_ny                  = 9e-6
 	beta_x       = 0.1,
 	beta_y       = 1,

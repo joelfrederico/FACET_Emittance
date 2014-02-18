@@ -24,8 +24,8 @@ command = ''.join([command,' ',elefile])
 # command = "elegant drift.ele"
 print(command)
 args = shlex.split(command)
-# p = subprocess.Popen(args)
-# p.wait()
+p = subprocess.Popen(args)
+p.wait()
 
 print('Finished elegant.')
 
@@ -44,10 +44,10 @@ print('Loaded!')
 # ========================================
 # Select only particles +/- 1% of center
 # ========================================
-bool = np.logical_and(d>-0.01,d<0.01)
-x = x[bool]
-y = y[bool]
-d = d[bool]
+# bool = np.logical_and(d>-0.01,d<0.01)
+# x = x[bool]
+# y = y[bool]
+# d = d[bool]
 
 # ========================================
 # Create sum_x = array of spots to fit
@@ -56,7 +56,7 @@ d = d[bool]
 # ========================================
 top='This'
 # mt.hist2d(y*1e3,(d+1),labels=[top,'y [mm]','$E/E_0$'],bins=res,fig=figdisp)
-bins = [101,11]
+bins = [101,21]
 h,extent = mt.hist2d(x,d,bins=bins)
 h,xe,ye=np.histogram2d(x,d,bins=bins)
 sum_x = np.transpose(h)

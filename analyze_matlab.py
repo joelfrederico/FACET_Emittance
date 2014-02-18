@@ -7,7 +7,7 @@ import mytools.slactrac as sltr
 import matplotlib.pyplot as plt
 import mytools as mt
 import copy
-
+plt.close('all')
 def wrap_analyze(infile):
 	# Load and transfer matlab variables
 	matvars        = sio.loadmat(infile)
@@ -46,16 +46,20 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg):
 	# print varerr.shape
 	chisq_red = np.zeros(num_pts)
 	plt.figure()
+
+	# Get spot sizes for strips
 	for i,el in enumerate(sum_x):
 		y                   = sum_x[i,:]
+		y = np.abs(y)
+		# print y
 		erry = np.sqrt(y)
 		erry[erry==0] = 0.3
 		# plt.plot(y)
 		# plt.show()
 		# popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=erry,plot=True,variance_bool=True,verbose=False)
-		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=np.ones(len(y)),plot=True,variance_bool=True,verbose=False)
-		plt.show()
+		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=np.ones(len(y)),plot=False,variance_bool=True,verbose=False)
 		variance[i]         = popt[2]
+		print i
 		varerr[i]           = pcov[2,2]
 		stddev[i]           = np.sqrt(pcov[2,2])
 
@@ -124,34 +128,16 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg):
 				LBEND2ELANEX	
 				],
 			gamma= gamma
+
 			)
 
-	beamline.calc_mat()
-	# beamline.change_energy(new_gamma);
-	# for el in beamline.elements:
-	#         print '---------------'
-	#         print 'Energy of {} = {}'.format(el._type,el._gamma)
-	#         try:
-	#                 print 'K1 = {}'.format(el._K1)
-	#         except:
-	#                 pass
-	#         try:
-	#                 print 'K2 = {}'.format(el._K2)
-	#         except:
-	#                 pass
-	#         try:
-	#                 print 'Length = {}'.format(el._length)
-	#         except:
-	#                 pass
-	# print '---------------'
-	#}}}
-
 	# Fit bowtie plot
-	chisq_factor = 1
+	chisq_factor = 1e-28
 	# chisq_factor = 63.6632188
-	used_error   = stddev*np.sqrt(chisq_factor)
+	# used_error   = stddev*np.sqrt(chisq_factor)
+	used_error   = chisq_factor*np.ones(len(stddev))
 
-	out          = bt.fitbowtie(beamline,davg,variance,T,twiss,emitx,error=used_error, verbose=True)
+	out          = bt.fitbowtie(beamline,davg,variance*1e-12,T,twiss,emitx,error=used_error, verbose=True)
 	spotexpected = out.spotexpected
 	X            = out.X
 	beta         = out.beta
@@ -160,7 +146,7 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg):
 
 	figcher=plt.figure()
 	top='Simulated Energy Emittance Measurement\nNOT PHYSICAL'
-	bt.plotfit(davg,variance,beta,out.X_unweighted,spotexpected,top,error=used_error)
+	bt.plotfit(davg,variance*1e-12,beta,out.X_unweighted,spotexpected,top,error=used_error)
 
 	figchisquare = plt.figure()
 	plt.plot(davg,chisq_red)
@@ -170,7 +156,6 @@ def analyze(sum_x,x_meter,qs1_k_half,qs2_k_half,gamma,davg):
 			ylabel='$\chi^2$')
 	# print davg
 	# print chisq_red
-
 
 if __name__ == '__main__':
 

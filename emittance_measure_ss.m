@@ -14,9 +14,9 @@ function emittance_measure_ss(handles)
 	% Find uid
 	uids = E200_api_getUID(gdata.raw.scalars.step_num,step_num);
 	uids = intersect(gdata.raw.images.CEGAIN.UID,uids);
-	wanted_UIDs = uids(imgnum);
+	% wanted_UIDs = uids(imgnum);
 	
 	imgstruct = gdata.raw.images.CEGAIN;
 	
-	matlab_script(gdata,wanted_UIDs,img)
+	matlab_script(gdata,img)
 end
