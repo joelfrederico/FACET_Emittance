@@ -1,9 +1,5 @@
 % function out = emittance_measure_ss(c,x_min,x_max,y_min,y_max)
 function out = matlab_script(data,img_sub)
-	% close('all');
-	
-	delE =0;
-	
 	% ====================================
 	% Load the desired image
 	% ====================================
@@ -42,6 +38,10 @@ function out = matlab_script(data,img_sub)
 	% B5D36 = bend_struct.dat{1};
 	% display(B5D36);
 	% e_axis=E200_cher_get_E_axis('20130423','CELOSS',0,[1:1392],0,B5D36);
+
+	curpath=pwd();
+	addpath(fullfile(curpath,'E200_Cam_Energy_Cal'));
+	
 	e_axis = E200_cam_E_cal(data,yvec,res);
 	e_axis = fliplr(e_axis);
 	% plot(e_axis);
@@ -160,14 +160,14 @@ function out = matlab_script(data,img_sub)
 	% ====================================
 	curpath = pwd();
 	savefile = fullfile(curpath,'tempfiles','forpython.mat');
-	save(savefile,'img','img_sub','hist_data','processed_data','-v7');
+	save(savefile,'data','img','img_sub','hist_data','processed_data');
 
 	% ====================================
 	% Run python analysis
 	% ====================================
-	set_PYTHONPATH = 'export PYTHONPATH=/home/fphysics/joelfred/E200_DRT/aux_functions:$PYTHONPATH;';
-	set_profile = 'source /home/fphysics/.bashrc ; source /home/fphysics/bin/WHO';
-	env_setup = [set_profile ' joelfred;' set_PYTHONPATH];
-	unix([env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile ' -v']);
-	out=data;
+	% set_PYTHONPATH = 'export PYTHONPATH=/home/fphysics/joelfred/E200_DRT/aux_functions:$PYTHONPATH;';
+	% set_profile = 'source /home/fphysics/.bashrc ; source /home/fphysics/bin/WHO';
+	% env_setup = [set_profile ' joelfred;' set_PYTHONPATH];
+	% unix([env_setup '~/E200_DRT/aux_functions/FACET_Emittance/analyze_matlab.py ' savefile ' -v']);
+	% out=data;
 end

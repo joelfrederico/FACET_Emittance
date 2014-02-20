@@ -1,4 +1,5 @@
-global gdata
+% global gdata
+gdata = data
 
 uids = E200_api_getUID(gdata.raw.scalars.step_num,6);
 uids = intersect(gdata.raw.images.CEGAIN.UID,uids);
@@ -8,9 +9,8 @@ wanted_UIDs = uids(32);
 
 imgstruct = gdata.raw.images.CEGAIN;
 
-% [imgs,bg]=E200_load_images(imgstruct,wanted_UIDs,data);
-
-% img = imgs{1};
+[imgs,bg]=E200_load_images(imgstruct,wanted_UIDs,data);
+img = imgs{1};
 
 % % Threshold at 3000
 % img(img<3000) = 0;
@@ -32,4 +32,4 @@ imgstruct = gdata.raw.images.CEGAIN;
 % xvec = 1:length(ximg);
 % xcent = sum(xvec.*ximg)/sum(ximg)
 
-matlab_script(gdata,wanted_UIDs,imgstruct)
+matlab_script(data,img)
