@@ -16,7 +16,7 @@ def wrap_analyze(infile):
 	# ======================================
 	# Load and transfer matlab variables
 	# ======================================
-	f=h5.File(infile);
+	f=h5.File(infile)
 	data=f['data']
 	
 	# ======================================
@@ -28,15 +28,17 @@ def wrap_analyze(infile):
 	img_uids=cegain['UID'][:,0]
 	# wantedUIDs=zero_uids[16]
 	valid_img_uids=np.intersect1d(zero_uids,img_uids)
-	wantedUIDs=valid_img_uids[1]
+	wantedUIDs=valid_img_uids[17]
 	wantedUIDs_bool=np.in1d(img_uids,wantedUIDs)
 	imgs=cegain['dat'][:,0]
 	img=imgs[wantedUIDs_bool]
 	img=mt.E200.E200_load_images(img,f)
+	img=img[0]
 	# Show image loaded
-	mt.figure('Image in')
-	plt.imshow(img[0])
+	# mt.figure('Image in')
+	# plt.imshow(img)
 
+	
 	# ======================================
 	# Load Matlab-processed info
 	# ======================================
@@ -59,50 +61,83 @@ def wrap_analyze(infile):
 	# ======================================
 	# Load mag energy/gamma
 	# ======================================
-	B_spect = h5file[h5file['data']['raw']['scalars']['LI20_LGPS_3330_BDES']['dat'][0,0]][0,0]
+	B_spect = f[f['data']['raw']['scalars']['LI20_LGPS_3330_BDES']['dat'][0,0]][0,0]
 	gamma     = (20.35/0.5109989)*1e3
 
 	# ======================================
-	# Translate into script params
+	# Set up image slices
 	# ======================================
-	quadE        = 20.35
-	davg         = (hist_data[0,:]/quadE-1)
-	variance_old = hist_data[1,:]
+	res_y    = 10.3934e-6
+	res_x    = res_y / np.sqrt(2)
 
 	# ======================================
-	# Get spot sizes for strips
+	# Image slice setup
+	#	-Use ~2% bandwidth
 	# ======================================
-	num_pts = sum_x.shape[1]
-	variance  = np.zeros(num_pts)
-	stddev    = np.zeros(num_pts)
-	varerr    = np.zeros(num_pts)
-	chisq_red = np.zeros(num_pts)
-	for i in mt.linspacestep(0,num_pts-1):
-		y                   = sum_x[:,i]
-		y = np.abs(y)
-		# print y
-		erry = np.sqrt(y)
-		erry[erry==0] = 0.3
-		# plt.plot(y)
-		# plt.show()
-		# popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,y,sigma_y=erry,plot=True,variance_bool=True,verbose=False)
-		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,
-				y,
-				sigma_y=np.ones(len(y)),
-				plot=False,
-				variance_bool=True,
-				verbose=False,
-				background_bool=True)
-		variance[i]         = popt[2]
-		# print i
-		varerr[i]           = pcov[2,2]
-		stddev[i]           = np.sqrt(pcov[2,2])
+	E0    = 20.35
+	# bandE = 0.01*E0
+	bandE = 0.008*E0
+	Emin  = E0-bandE
+	Emax  = E0+bandE
+	# Corresponding y window
+	y_min = bt.E_to_y(Emin,f,res_y)
+	y_max = bt.E_to_y(Emax,f,res_y)
+
+	# Get image size and corresponding
+	# y-axis -> energy
+	ysize,xsize=img.shape
+
+	# x_min starts at 200 to avoid cam region
+	# that has no counts, on the left.
+	# Right side doesn't have this issue.
+	x_min = 200
+	x_max = xsize
+	x_min = 500
+	x_max = 750
+	
+	mt.findpinch(img,xbounds=(x_min,x_max),ybounds=(y_min,y_max),step=1)
+
+	# ======================================
+	# Define strip edges.
+	# ======================================
+	# Number of strips should be odd so the
+	# center strip is at E0.
+	num_strips = 11
+	# There are +1 edges than strips in y.
+	E_edges = np.linspace(Emin,Emax,num_strips+1)
+	x_edges = mt.linspacestep(x_min,x_max)
+
+	# ======================================
+	# Get spot sizes for strips (new)
+	# ======================================
+	variance  = np.zeros(num_strips)
+	stddev    = np.zeros(num_strips)
+	varerr    = np.zeros(num_strips)
+	chisq_red = np.zeros(num_strips)
+	eavg      = np.zeros(num_strips)
+	for i in mt.linspacestep(0,num_strips-1):
+		# Get low/high energy edges
+		Elow  = E_edges[i]
+		Ehigh = E_edges[i+1]
+		
+		# Convert to y values
+		ylow  = bt.E_to_y(Elow,f,res_y)
+		yhigh = bt.E_to_y(Ehigh,f,res_y)
+		# gaussout = mt.fitimageslice(img,res/1e6,(x_min,x_max),(ylow,yhigh))
+		eavg[i], gaussout = mt.fitimageslice(img,res_x,res_y,(x_min,x_max),(ylow,yhigh),avg_e_func=bt.avg_E,h5file=f)
+		chisq_red[i] = gaussout.chisq_red
+		variance[i]         = gaussout.popt[2]
+		varerr[i]           = gaussout.pcov[2,2]
+		stddev[i]           = np.sqrt(gaussout.pcov[2,2])
+
+	davg=eavg/20.35 - 1
+	# _pdb.set_trace()
 
 	# ======================================
 	# Set up basic beamline
 	# ======================================
 	emitx = 0.000100/gamma
-	betax = .5
+	betax = 0.5
 	alphax = -1 
 	gammax = (1+np.power(alphax,2))/betax
 	twiss = sltr.Twiss(beta=0.5,
@@ -159,7 +194,7 @@ def wrap_analyze(infile):
 	# print davg
 	# print chisq_red
 
-	_pdb.set_trace()
+	# _pdb.set_trace()
 
 if __name__ == '__main__':
         parser=argparse.ArgumentParser(description=
