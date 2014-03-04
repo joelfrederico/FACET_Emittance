@@ -12,6 +12,8 @@ import scipy.io as sio
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.gridspec as gs
+import matplotlib as mpl
+# mpl.rcParams.update({'font.size':7})
 
 # My module imports
 import ButterflyEmittancePython as bt
@@ -35,7 +37,7 @@ def wrap_analyze(infile):
 	# Create figure
 	fig=mt.figure('Page 1',figsize=(8.5,11))
 	# Create larger gridspec
-	outergs= gs.GridSpec(5,1)
+	outergs= gs.GridSpec(4,1)
 
 	# ======================================
 	# Load and transfer matlab variables
@@ -66,16 +68,16 @@ def wrap_analyze(infile):
 		img_uids=cegain['UID'][:,0]
 		# wantedUIDs=zero_uids[16]
 		valid_img_uids=np.intersect1d(zero_uids,img_uids)
-		for j,stepuid in enumerate(valid_img_uids):
+		for j,stepuid in enumerate(valid_img_uids[0:5]):
 			try:
 				# ======================================
 				# Save all figs to one page
 				# ======================================
 				# Use correct line
-				linnum=np.mod(j,5)
+				linnum=np.mod(j,4)
 				if linnum == 0:
 					if j>0:
-						plt.tight_layout()
+						outergs.tight_layout(fig)
 						pp.savefig(figure=fig)
 					plt.close('all')
 					fig=mt.figure('Steps {}-{}'.format(j+1,j+5),figsize=(8.5,11))
@@ -93,6 +95,8 @@ def wrap_analyze(infile):
 						)
 				fig.add_subplot(aximg)
 				fig.add_subplot(axplotfit)
+				# innergs.tight_layout(fig)
+				# outergs.tight_layout(fig)
 				emit_array[i,j]=out.emit
 				# plt.show()
 				# plt.clear('all')
@@ -109,6 +113,8 @@ def wrap_analyze(infile):
 			pdb.set_trace()
 
 	# pdb.set_trace()
+	outergs.tight_layout(fig)
+	pp.savefig(figure=fig)
 	pp.close()
 	return emit_array
 
