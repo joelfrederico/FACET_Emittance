@@ -7,7 +7,7 @@
 	! final                    = %s.fin,
 	! acceptance               = %s.acceptance,
 	! losses                   = %s.lost,
-	! magnets                  = %s.mag,
+	magnets                  = %s.mag,
 	! parameters               = %s.par,
 	combine_bunch_statistics = 0,
 	default_order            = 2,
@@ -37,8 +37,25 @@
 ! &end
 
 &run_control
-	n_steps                  = 1
+	! n_steps                  = 1
+	n_indices = 1
 &end
+
+&vary_element
+	index_number=0,
+	name = QS1,
+	item = K1,
+	enumeration_file = "scan.par",
+	enumeration_column = QS1
+&end
+&vary_element
+	index_number=0,
+	name = QS2,
+	item = K1,
+	enumeration_file = "scan.par",
+	enumeration_column = QS2
+&end
+
 
 ! &alter_elements
 !         name           = "QS*",
@@ -89,7 +106,7 @@
 	! eta_y                    = 0,
 	! etap_y                   = 0,
 	Po                       = 40000,
-	sigma_dp                 = 0.01,
+	sigma_dp                 = 0.03,
 	! sigma_dp                 = 0,
 	! 3 mm/10 fs
 	sigma_s                  = 3e-6,

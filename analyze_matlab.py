@@ -5,6 +5,7 @@ import argparse
 import copy
 import h5py as h5
 import pdb
+import collections as _col
 
 # Math/science imports
 import numpy as np
@@ -50,10 +51,11 @@ def wrap_analyze(infile):
 	# ======================================
 	step_value=data['raw']['scalars']['step_value']
 	step_vals=np.unique(E200.E200_api_getdat(step_value,f))
+	step_vals=step_vals[np.logical_and(step_vals>-0.8,step_vals<0.6)]
 	# Artificially limit step_vals to =0GeV
-	step_vals=np.array([0])
+	# step_vals=np.array([0])
 	numvals = step_vals.shape[0]
-	emit_array=np.zeros((numvals,50))
+	emit_array=np.zeros((numvals*50,2))
 
 	# for i,stepval in enumerate(step_vals[2:]):
 	# ======================================
@@ -63,12 +65,11 @@ def wrap_analyze(infile):
 		print 'We\'re on step {} with value {}.'.format(i,stepval)
 
 		zero_uids=mt.E200.E200_api_getUID(step_value,stepval,f)
-		print zero_uids
 		cegain = data['raw']['images']['CEGAIN']
 		img_uids=cegain['UID'][:,0]
 		# wantedUIDs=zero_uids[16]
 		valid_img_uids=np.intersect1d(zero_uids,img_uids)
-		for j,stepuid in enumerate(valid_img_uids[0:5]):
+		for j,stepuid in enumerate(valid_img_uids):
 			try:
 				# ======================================
 				# Save all figs to one page
@@ -77,7 +78,7 @@ def wrap_analyze(infile):
 				linnum=np.mod(j,4)
 				if linnum == 0:
 					if j>0:
-						outergs.tight_layout(fig)
+						# outergs.tight_layout(fig)
 						pp.savefig(figure=fig)
 					plt.close('all')
 					fig=mt.figure('Steps {}-{}'.format(j+1,j+5),figsize=(8.5,11))
@@ -97,25 +98,21 @@ def wrap_analyze(infile):
 				fig.add_subplot(axplotfit)
 				# innergs.tight_layout(fig)
 				# outergs.tight_layout(fig)
-				emit_array[i,j]=out.emit
+				emit_array[i*50+j,0]=out.emit
+				emit_array[i*50+j,1]=stepval
 				# plt.show()
 				# plt.clear('all')
 				# pdb.set_trace()
-				
 			except KeyboardInterrupt:
 				raise
 			except:
 				# raise
 				pass
-
-
-		if i > 0:
-			pdb.set_trace()
-
 	# pdb.set_trace()
-	outergs.tight_layout(fig)
+	# outergs.tight_layout(fig)
 	pp.savefig(figure=fig)
 	pp.close()
+	
 	return emit_array
 
 
@@ -139,14 +136,8 @@ def single_analysis(data,wantedUIDs,f,plot=False,aximg=None,axplotfit=None):
 	# Show image loaded
 	if plot:
 		plt.imshow(img)
-		if plot:
-			plt.show()
+		plt.show()
 
-	if aximg is not None:
-		aximg.imshow(img)
-		mt.figure('this')
-		plt.imshow(img)
-		# plt.show()
 
 	# ======================================
 	# Set up image slices
@@ -167,13 +158,14 @@ def single_analysis(data,wantedUIDs,f,plot=False,aximg=None,axplotfit=None):
 	#	-Use ~2% bandwidth
 	# ======================================
 	E0    = 20.35 + E_offset
+	bandE = 0.016*E0
+	E0 = E0-bandE/10
 	# bandE = 0.01*E0
-	bandE = 0.008*E0
 	Emin  = E0-bandE
 	Emax  = E0+bandE
 	# Corresponding y window
-	y_min = bt.E_to_y(Emin,f,res_y)
-	y_max = bt.E_to_y(Emax,f,res_y)
+	y_max = bt.E_to_y(Emin,f,res_y)
+	y_min = bt.E_to_y(Emax,f,res_y)
 
 	# Get image size and corresponding
 	# y-axis -> energy
@@ -187,6 +179,13 @@ def single_analysis(data,wantedUIDs,f,plot=False,aximg=None,axplotfit=None):
 	# More realistic bounds
 	x_min = 500
 	x_max = 750
+	
+	# Show ROI
+	if aximg is not None:
+		imgroi=img[y_min:y_max,x_min:x_max]
+		aximg.imshow(imgroi)
+		mt.figure('this')
+		plt.imshow(imgroi)
 
 	# ======================================
 	# Plot image
@@ -195,8 +194,7 @@ def single_analysis(data,wantedUIDs,f,plot=False,aximg=None,axplotfit=None):
 		fig=mt.figure('Roi\'d image')
 		plt.imshow(img[y_min:y_max,x_min:x_max])
 		pdb.set_trace()
-		if plot:
-			plt.show()
+		plt.show()
 	
 	# ======================================
 	# Find the pinch
@@ -232,8 +230,8 @@ def single_analysis(data,wantedUIDs,f,plot=False,aximg=None,axplotfit=None):
 		Ehigh = E_edges[i+1]
 		
 		# Convert to y values
-		ylow  = bt.E_to_y(Elow,f,res_y)
-		yhigh = bt.E_to_y(Ehigh,f,res_y)
+		yhigh = bt.E_to_y(Elow,f,res_y)
+		ylow  = bt.E_to_y(Ehigh,f,res_y)
 		eavg[i], gaussout = mt.fitimageslice(
 				img,
 				res_x,
@@ -243,7 +241,6 @@ def single_analysis(data,wantedUIDs,f,plot=False,aximg=None,axplotfit=None):
 				avg_e_func=bt.avg_E,
 				h5file=f,
 				plot=False)
-
 		chisq_red[i] = gaussout.chisq_red
 		variance[i]         = gaussout.popt[2]
 		try:
@@ -294,6 +291,7 @@ def single_analysis(data,wantedUIDs,f,plot=False,aximg=None,axplotfit=None):
 	gamma          = (1+davg)*39824
 	beamline_array = np.array([])
 	for i,gval in enumerate(gamma):
+		# print 'gval = {}'.format(gval)
 		beamline.gamma = gval
 		beamline_array = np.append(beamline_array,copy.deepcopy(beamline))
 
