@@ -10,6 +10,10 @@ import mytools.slactrac as sltr
 import shlex, subprocess
 import os, string
 import ButterflyEmittancePython as bt
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.gridspec as gs
+import matplotlib as mpl
+mpl.rcParams.update({'font.size':9})
 
 plt.close('all')
 

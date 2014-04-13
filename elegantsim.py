@@ -70,8 +70,8 @@ for i,val in enumerate(np.linspace(1,6,6)):
 	page = st.loadpage('drift.out',i+1)
 	x=st.sdds2array(page,'x')
 	y=st.sdds2array(page,'y')
+	d=st.sdds2array(page,'d')
 	# imgs[i,:,:],extent[i,:]=mt.hist2d(x,y,labels=('Config Space','x','y'),bins=bins)
 	imgs[i,:,:],xedge[i,:],yedge[i,:]=np.histogram2d(x,y,bins=bins)
 	xcent[i]=findcent(xedge[i])
 	ycent[i]=findcent(yedge[i])
-
