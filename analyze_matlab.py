@@ -54,8 +54,9 @@ x_axis = (x_vec-x_mean)*res*10**(-3)
 # Get image
 # ======================================
 # imgdat=mt.E200.E200_api_getdat(imgstr,f)
-img=mt.E200.E200_load_images(imgstr,f)
-img=img[8,xstart:xstop,ystart:ystop]
+oimg=mt.E200.E200_load_images(imgstr,f)
+oimg=oimg[8,:,:]
+img=oimg[xstart:xstop,ystart:ystop]
 # plt.imshow(np.rot90(img,k=-1))
 # plt.show()
 
@@ -74,33 +75,25 @@ variance  = np.zeros(num_pts)
 stddev    = np.zeros(num_pts)
 varerr    = np.zeros(num_pts)
 chisq_red = np.zeros(num_pts)
+y=np.array([])
 for i in mt.linspacestep(1,n_groups-1):
-	print i
+	# print i
 	sum_x = np.sum(img[:,(i-1)*n_rows:i*n_rows],1)
+	y = np.append(y,ystart+n_rows*(i-1)+(n_rows-1.)/2.)
 	# plt.plot(x_meter,sum_x)
 	# plt.show()
-	popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,sum_x,sigma_y=np.sqrt(sum_x),plot=False,variance_bool=True,verbose=True,background_bool=True)
+	popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,sum_x,sigma_y=np.sqrt(sum_x),plot=False,variance_bool=True,verbose=False,background_bool=True)
 	variance[i]         = popt[2]
 	varerr[i]           = pcov[2,2]
 	stddev[i]           = np.sqrt(pcov[2,2])
 
+eaxis = mt.E200.eaxis(y,10e-6,oimg)
 
 # davg         = (hist_data[:,0]-1)
 # variance_old = hist_data[:,1]
 # filt         = np.logical_not( (davg>(0.9971-1)) & (davg < (1.003-1)))
 # filt         = np.logical_or(filt, np.logical_not(filt))
 
-# Set up initial conditions
-# emitx = 100.1033e-6/40000 
-# betax = 59.69009e-3
-# alphax = -0.7705554
-
-# RMS
-# emitx = 0.00201/gamma
-# betax = 11.2988573693
-# alphax = 6.72697997971
-
-# Gauss fit
 emitx = 0.001363/gamma
 betax = 1
 alphax = 0
@@ -110,8 +103,11 @@ twiss    = sltr.Twiss(
 		alpha = 0
 		)
 
+# ======================================
 # Create beamlines
-beamline=bt.beamlines.IP_to_lanex(twiss_x=twiss,twiss_y=twiss,gamma=gamma)
+# ======================================
+# beamline=bt.beamlines.IP_to_cherfar(twiss_x=twiss,twiss_y=twiss,gamma=gamma)
+beamline=bt.beamlines.IP_to_cherfar(twiss_x=twiss,twiss_y=twiss)
 
 # Fit bowtie plot
 chisq_factor = 1
