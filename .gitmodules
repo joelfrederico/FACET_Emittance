@@ -1,0 +1,3 @@
+[submodule "ButterflyEmittancePython"]
+	path = ButterflyEmittancePython
+	url = git@github.com:joelfrederico/ButterflyEmittancePython.git
