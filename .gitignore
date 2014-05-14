@@ -1,4 +1,7 @@
 .*
+*.pdf
+*.pyc
+java.opts
 *.cen
 *.fin
 *.log
