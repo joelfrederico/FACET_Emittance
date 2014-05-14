@@ -19,7 +19,11 @@ plt.close()
 infile     = 'forpython.mat'
 f          = h5.File(infile);
 data       = f['data']
-imgstr       = data['raw']['images']['CMOS_FAR']
+camname = f['camname']
+camname = mt.derefstr(camname)
+imgnum = f['imgnum'][0,0]
+# imgstr       = data['raw']['images']['CMOS_FAR']
+imgstr       = data['raw']['images'][camname]
 res = imgstr['RESOLUTION'][0,0]
 res = res*1.0e-6
 # print res
@@ -60,7 +64,8 @@ ystart = 2560-690
 # ======================================
 # imgdat=mt.E200.E200_api_getdat(imgstr,f)
 oimg=mt.E200.E200_load_images(imgstr,f)
-oimg=oimg[8,:,:]
+# oimg=oimg[8,:,:]
+oimg=oimg[imgnum-1,:,:]
 oimg=np.fliplr(oimg)
 img=oimg[xstart:xstop,ystart:ystop]
 # plt.imshow(np.rot90(img,k=-1))
@@ -95,18 +100,14 @@ for i in mt.linspacestep(0,n_groups-1):
 # eaxis = mt.E200.eaxis(y,10e-6,oimg)
 eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660,img=oimg)
 
-print eaxis
-print variance
 eaxis=eaxis[:-2]
 variance=variance[:-2]
-print eaxis
-print variance
 
-plt.plot(eaxis,variance,'.-')
-locs,labels = plt.xticks()
-plt.xticks(locs,map(lambda x:"%0.2f" % x,locs))
-
-plt.show()
+# plt.plot(eaxis,variance,'.-')
+# locs,labels = plt.xticks()
+# plt.xticks(locs,map(lambda x:"%0.2f" % x,locs))
+# 
+# plt.show()
 
 # davg         = (hist_data[:,0]-1)
 # variance_old = hist_data[:,1]
@@ -147,7 +148,7 @@ out = bt.fitBeamlineScan(beamline_array,
 		emitx,
 		error=used_error,
 		verbose=True,
-		plot=True)
+		plot=False)
 
 # ======================================
 # Plot results
@@ -161,50 +162,4 @@ bt.plotfit(eaxis,
 		figlabel='Butterfly Fit',
 		bottom='Energy [GeV]',
 		error=used_error)
-# mt.addlabel(xlabel='$\delta$')
 plt.show()
-# 
-# # Fit bowtie plot
-# chisq_factor = 1
-# # chisq_factor = 63.6632188
-# used_error   = stddev*np.sqrt(chisq_factor)
-# 
-# out          = bt.fitbowtie(beamline,davg,variance,filt,T,twiss,emitx,error=used_error, verbose=True)
-# spotexpected = out.spotexpected
-# X            = out.X
-# beta         = out.beta
-# covar        = out.covar
-# # print covar
-# 
-# figcher=plt.figure()
-# top='Simulated Energy Emittance Measurement\nNOT PHYSICAL'
-# bt.plotfit(filt,davg,variance,beta,out.X_unweighted,spotexpected,top,error=used_error)
-# 
-# figchisquare = plt.figure()
-# # plt.plot(davg,chisq_red)
-# mt.plot_featured(davg,chisq_red,'.-',
-# 		toplabel='Chi-Squared for Each Gaussian Fit',
-# 		xlabel='$E/E_0$',
-# 		ylabel='$\chi^2$')
-# # print davg
-# # print chisq_red
-
-if __name__ == '__main__':
-
-	parser=argparse.ArgumentParser(description=
-			'Wrap python analysis to be called at the command line.')
-	parser.add_argument('-V',action='version',version='%(prog)s v0.2')
-	parser.add_argument('-v','--verbose',action='store_true',
-			help='Verbose mode.')
-	parser.add_argument('-o','--output',action='store',
-			help='Output filename. (Default: no file output.)')
-	parser.add_argument('inputfile',
-			help='Input Matlab v7 file.')
-	parser.add_argument('-f','--fit', choices=['gauss', 'bigauss'], default='gauss', 
-			help='Type of fit to spot size profile. (Default: %(default)s)')
-	arg=parser.parse_args()
-
-	out=analyze(arg.inputfile)
-	
-	if arg.verbose:
-		plt.show()
