@@ -1,4 +1,10 @@
 .*
+*_auto.py
+*.mag
+*.h-x-y
+*.h?
+*.ps
+*.new
 *.pdf
 *.pyc
 java.opts
