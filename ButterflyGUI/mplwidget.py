@@ -2,6 +2,7 @@ import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 from PyQt4 import QtGui
 import matplotlib as mpl
+# mpl.rcParams['image.aspect'] = 'auto'
 # import matplotlib.figure as plt
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
@@ -40,10 +41,10 @@ class Mpl_Image(FigureCanvas):
 
 		self.ax=self.fig.add_subplot(111)
 
-		img = np.random.randn(10,10)
 		self.rect = mpl.patches.Rectangle((-10,0),0,3,facecolor='w',edgecolor='r',alpha=0.5)
 
-		self.ax.imshow(img)
+		# img = np.random.randn(10,10)
+		# self.ax.imshow(img)
 		self.ax.add_patch(self.rect)
 
 	def on_press(self,event):
@@ -58,7 +59,28 @@ class Mpl_Image(FigureCanvas):
 		self.rect.set_width(self.x1 - self.x0)
 		self.rect.set_height(self.y1 - self.y0)
 		self.rect.set_xy((self.x0, self.y0))
+		print self.rect
 		self.ax.figure.canvas.draw()
+
+	def zoom_rect(self,border=0):
+		# Get x coordinates
+		x0 = self.rect.get_x()
+		width = self.rect.get_width()
+		x1 = x0+width
+
+		# Get y coordinates
+		y0 = self.rect.get_y()
+		height = self.rect.get_height()
+		y1 = y0+height
+
+		# Add border
+		x0 = x0 - border
+		x1 = x1 + border
+		y0 = y0 - border
+		y1 = y1 + border
+
+		self.ax.set_xlim(x0,x1)
+		self.ax.set_ylim(y0,y1)
 
 class Mpl_Plot(Mpl_Image):
 	pass

@@ -1,4 +1,5 @@
 .*
+*.autosave
 *_auto.py
 *.mag
 *.h-x-y
