@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>597</width>
-    <height>322</height>
+    <width>768</width>
+    <height>569</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,37 +20,63 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="centralWidget_verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="row1">
       <item>
        <layout class="QVBoxLayout" name="image_layout">
         <item>
-         <widget class="Mpl_Image" name="imageview_mpl" native="true">
+         <widget class="Mpl_Image_Plus_Slider" name="imageview_mpl" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <zorder></zorder>
-          <zorder></zorder>
-          <zorder></zorder>
-          <zorder></zorder>
-          <zorder>imageslider</zorder>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="imageslider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
          </widget>
         </item>
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="fit_layout">
+       <layout class="QVBoxLayout" name="roi_layout">
+        <item>
+         <widget class="Mpl_Image" name="widget" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="row2">
+      <item>
+       <layout class="QVBoxLayout" name="spacer">
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="fit_layout" stretch="0,0,0">
         <item>
          <widget class="Mpl_Plot" name="fitview_mpl" native="true">
           <property name="sizePolicy">
@@ -59,7 +85,6 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <zorder>rightpoint_slider</zorder>
          </widget>
         </item>
         <item>
@@ -142,7 +167,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>597</width>
+     <width>768</width>
      <height>22</height>
     </rect>
    </property>
@@ -151,13 +176,19 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>Mpl_Image</class>
+   <class>Mpl_Plot</class>
    <extends>QWidget</extends>
    <header>mplwidget</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Mpl_Plot</class>
+   <class>Mpl_Image_Plus_Slider</class>
+   <extends>QWidget</extends>
+   <header>mplwidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Mpl_Image</class>
    <extends>QWidget</extends>
    <header>mplwidget</header>
    <container>1</container>

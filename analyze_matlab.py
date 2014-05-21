@@ -11,20 +11,24 @@ import copy
 import h5py as h5
 import matplotlib as mpl
 
-def analyze_matlab(f=None,rect=None,fitpts=None):
+
+def analyze_matlab(f=None,data=None,camname=None,imgnum=None,oimg=None,rect=None,fitpts=None,verbose=True):
 
 	plt.close()
 	
-	if f==None:
-		# ======================================
-		# Load and transfer matlab variables
-		# ======================================
+	# ======================================
+	# Load and transfer matlab variables
+	# ======================================
+	if (f==None):
 		infile     = 'forpython.mat'
 		f          = h5.File(infile);
-	data       = f['data']
-	camname = f['camname']
-	camname = mt.derefstr(camname)
-	imgnum = f['imgnum'][0,0]
+	if data == None:
+		data       = f['data']
+	if camname == None:
+		camname = f['camname']
+		camname = mt.derefstr(camname)
+	if imgnum == None:
+		imgnum = f['imgnum'][0,0]
 	# imgstr       = data['raw']['images']['CMOS_FAR']
 	imgstr       = data['raw']['images'][camname]
 	res = imgstr['RESOLUTION'][0,0]
@@ -55,45 +59,34 @@ def analyze_matlab(f=None,rect=None,fitpts=None):
 		ystart = 1870
 		ystop  = 1900
 	else:
-		xstart = rect.get_y()
-		xstop = xstart + rect.get_height()
-		ystart = rect.get_x()
-		ystop = ystart + rect.get_width()
+		betterRect = mt.Rectangle(rect)
+		xstart = betterRect.x0
+		xstop  = betterRect.x1
+		ystart = betterRect.y0
+		ystop  = betterRect.y1
 
 		xstart = np.round(xstart)
 		xstop= np.round(xstop)
 		ystart = np.round(ystart)
 		ystop= np.round(ystop)
-
-	if xstart > xstop:
-		temp = xstart
-		xstart = xstop
-		xstop = temp
-	if ystart > ystop:
-		temp = ystart
-		ystart = ystop
-		ystop = temp
-	print xstart
-	print xstop
-	print ystart
-	print ystop
 	
 	# ======================================
 	# Get image
 	# ======================================
 	# imgdat=mt.E200.E200_api_getdat(imgstr,f)
-	oimg=mt.E200.E200_load_images(imgstr,f)
-	oimg=oimg[imgnum-1,:,:]
+	if oimg==None:
+		oimg=mt.E200.E200_load_images(imgstr,f)
+		oimg=oimg[imgnum-1,:,:]
 	# oimg=np.fliplr(oimg)
 	img=oimg[xstart:xstop,ystart:ystop]
 	# plt.imshow(np.rot90(img,k=-1))
-	print 'hi'
-	fig = plt.figure()
-	ax=fig.add_subplot(111)
-	imgplot=ax.imshow(img,interpolation='none',origin='lower',aspect='auto')
-	fig.colorbar(imgplot)
-	plt.show()
-	print 'bye'
+	if verbose:
+		fig = plt.figure()
+		ax=fig.add_subplot(111)
+		imgplot=ax.imshow(img,interpolation='none',origin='lower',aspect='auto')
+		imgplot.set_clim(0,2000)
+		fig.colorbar(imgplot)
+		plt.show()
 	
 	# ======================================
 	# Create a histogram of std dev
@@ -122,7 +115,8 @@ def analyze_matlab(f=None,rect=None,fitpts=None):
 		# stddev[i]           = np.sqrt(pcov[2,2])
 	
 	# eaxis = mt.E200.eaxis(y,10e-6,oimg)
-	eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660,img=oimg)
+	# eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660,img=oimg)
+	eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660)
 	
 	eaxis=eaxis[:-2]
 	variance=variance[:-2]
@@ -177,16 +171,17 @@ def analyze_matlab(f=None,rect=None,fitpts=None):
 	# ======================================
 	# Plot results
 	# ======================================
-	mpl.rcParams.update({'font.size':12})
-	bt.plotfit(eaxis,
-			variance,
-			out.beta,
-			out.X_unweighted,
-			top='Emittance/Twiss Fit to Witness Butterfly',
-			figlabel='Butterfly Fit',
-			bottom='Energy [GeV]',
-			error=used_error)
-	plt.show()
+	if verbose:
+		mpl.rcParams.update({'font.size':12})
+		bt.plotfit(eaxis,
+				variance,
+				out.beta,
+				out.X_unweighted,
+				top='Emittance/Twiss Fit to Witness Butterfly',
+				figlabel='Butterfly Fit',
+				bottom='Energy [GeV]',
+				error=used_error)
+		plt.show()
 
 if __name__ == '__main__':
 	analyze_matlab()
