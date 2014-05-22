@@ -12,7 +12,16 @@ import h5py as h5
 import matplotlib as mpl
 
 
-def analyze_matlab(f=None,data=None,camname=None,imgnum=None,oimg=None,rect=None,fitpts=None,verbose=True):
+def analyze_matlab(f=None,
+		data=None,
+		camname=None,
+		imgnum=None,
+		oimg=None,
+		rect=None,
+		fitpts=None,
+		roiaxes=None,
+		plotaxes=None,
+		verbose=True):
 
 	plt.close()
 	
@@ -80,13 +89,13 @@ def analyze_matlab(f=None,data=None,camname=None,imgnum=None,oimg=None,rect=None
 	# oimg=np.fliplr(oimg)
 	img=oimg[xstart:xstop,ystart:ystop]
 	# plt.imshow(np.rot90(img,k=-1))
-	if verbose:
-		fig = plt.figure()
-		ax=fig.add_subplot(111)
-		imgplot=ax.imshow(img,interpolation='none',origin='lower',aspect='auto')
-		imgplot.set_clim(0,2000)
-		fig.colorbar(imgplot)
-		plt.show()
+	if roiaxes != None:
+		# fig = plt.figure()
+		# ax=fig.add_subplot(111)
+		imgplot=roiaxes.imshow(img,interpolation='none',origin='lower',aspect='auto')
+		# imgplot.set_clim(0,2000)
+		# fig.colorbar(imgplot)
+		# plt.show()
 	
 	# ======================================
 	# Create a histogram of std dev
@@ -171,17 +180,17 @@ def analyze_matlab(f=None,data=None,camname=None,imgnum=None,oimg=None,rect=None
 	# ======================================
 	# Plot results
 	# ======================================
-	if verbose:
-		mpl.rcParams.update({'font.size':12})
-		bt.plotfit(eaxis,
-				variance,
-				out.beta,
-				out.X_unweighted,
-				top='Emittance/Twiss Fit to Witness Butterfly',
-				figlabel='Butterfly Fit',
-				bottom='Energy [GeV]',
-				error=used_error)
-		plt.show()
+	mpl.rcParams.update({'font.size':12})
+	bt.plotfit(eaxis,
+			variance,
+			out.beta,
+			out.X_unweighted,
+			top='Emittance/Twiss Fit to Witness Butterfly',
+			figlabel='Butterfly Fit',
+			bottom='Energy [GeV]',
+			axes = plotaxes,
+			error=used_error)
+	plt.show()
 
 if __name__ == '__main__':
 	analyze_matlab()

@@ -48,13 +48,20 @@ class ButterflyGUI(QtGui.QMainWindow):
 			
 	def run_sim(self):
 		print 'Clicked!'
+		self.ui.fitview_mpl.ax.clear()
+		self.ui.roiview_mpl.ax.clear()
 		self.analyzefcn(f=self.infile,
 				data=self.data,
 				camname=self.camname,
 				imgnum=self.imgnum,
 				oimg = self.oimg,
 				verbose = False,
+				roiaxes=self.ui.roiview_mpl.ax,
+				plotaxes=self.ui.fitview_mpl.ax,
 				rect=self.ui.imageview_mpl.rect)
+
+		self.ui.fitview_mpl.ax.figure.canvas.draw()
+		self.ui.roiview_mpl.ax.figure.canvas.draw()
 
 	def slider_change(self,val,name):
 		getattr(self.ui,name).setText(str(val))
