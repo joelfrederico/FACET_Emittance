@@ -1,4 +1,5 @@
 .*
+*.local_files
 *.autosave
 *_auto.py
 *.mag

@@ -15,8 +15,6 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui = mw.Ui_MainWindow()
 		self.ui.setupUi(self)
 		self.ui.analyzebtn.clicked.connect(self.run_sim)
-		self.ui.leftpoint_slider.valueChanged.connect(lambda val: self.slider_change(val,'leftpoint_text'))
-		self.ui.rightpoint_slider.valueChanged.connect(lambda val: self.slider_change(val,'rightpoint_text'))
 
 		# self.ui.imageview_mpl.img.rectChanged.connect(self.updateROI)
 

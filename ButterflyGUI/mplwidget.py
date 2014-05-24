@@ -12,3 +12,6 @@ class Mpl_Image_Plus_Slider(_mt.qt.Mpl_Image_Plus_Slider):
 
 class Mpl_Plot(_mt.qt.Mpl_Plot):
 	pass
+
+class Slider_and_Text(_mt.qt.Slider_and_Text):
+	pass

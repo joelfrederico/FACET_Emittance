@@ -73,7 +73,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="fit_layout" stretch="0,0,0">
+       <layout class="QVBoxLayout" name="fit_layout" stretch="0">
         <item>
          <widget class="Mpl_Plot" name="fitview_mpl" native="true">
           <property name="sizePolicy">
@@ -83,68 +83,6 @@
            </sizepolicy>
           </property>
          </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="leftpoint_layout">
-          <item>
-           <widget class="QSlider" name="leftpoint_slider">
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="leftpoint_text">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>2</width>
-              <height>0</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="rightpoint_layout">
-          <item>
-           <widget class="QSlider" name="rightpoint_slider">
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>10</number>
-            </property>
-            <property name="value">
-             <number>10</number>
-            </property>
-            <property name="sliderPosition">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="rightpoint_text"/>
-          </item>
-         </layout>
         </item>
        </layout>
       </item>

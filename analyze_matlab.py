@@ -61,7 +61,7 @@ def analyze_matlab(f=None,
 	# xstop  = 550
 	# ystart = 225
 	# ystop  = 280
-	n_rows    = 3
+	n_rows    = 2
 	if rect==None:
 		xstart = 275
 		xstop  = 325
