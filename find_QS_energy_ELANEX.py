@@ -75,7 +75,8 @@ def find_QS_relaxed(E):
 		beamline.gamma = gamma_E0 * (E+E0+E_bandwidth)/E0
 		sx2 = beamline.spotsize_x_end(emit_x)
 
-		return (sx2/sx1)**2 + (sx1/sx0)**2 + (sy1/sy0)**2
+		# return (sx2/sx1)**2 + (sx1/sx0)**2 + (sy1/sy0)**2
+		return (sx1/sx0)**2 + (sy1/sy0)**2
 
 	res = spopt.minimize(meritfunc,[200,-100],tol=1e-50)
 	return res.x
