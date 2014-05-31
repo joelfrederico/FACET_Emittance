@@ -25,11 +25,10 @@ class ButterflyGUI(QtGui.QMainWindow):
 			self.camname = infile['camname']
 			self.camname = mt.derefstr(self.camname)
 			imgstr = self.data['raw']['images'][self.camname]
-			self.oimg   = mt.E200.E200_load_images(imgstr,infile)
-			self.oimg   = self.oimg[self.imgnum-1,:,:]
-			# imgplot = self.ui.imageview_mpl.ax.imshow(oimg,interpolation='none')
-			# imgplot.set_clim(0,3600)
-			# self.ui.imageview_mpl.fig.colorbar(imgplot)
+			uids = imgstr['UID']
+			uids = uids[self.imgnum-1]
+			self.oimg   = mt.E200.E200_load_images(imgstr,infile,uids)
+			self.oimg   = self.oimg[0]
 			self.ui.imageview_mpl.image = self.oimg
 			self.ui.imageview_mpl.setSliderValue(3600)
 
