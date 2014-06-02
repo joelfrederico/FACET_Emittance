@@ -61,7 +61,7 @@ def analyze_matlab(f=None,
 	# xstop  = 550
 	# ystart = 225
 	# ystop  = 280
-	n_rows    = 2
+	n_rows    = 5
 	if rect==None:
 		xstart = 275
 		xstop  = 325
@@ -123,18 +123,23 @@ def analyze_matlab(f=None,
 		# varerr[i]           = pcov[2,2]
 		# stddev[i]           = np.sqrt(pcov[2,2])
 	
-	# eaxis = mt.E200.eaxis(y,10e-6,oimg)
 	# eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660,img=oimg)
-	eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660)
+	# eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660)
+	ymotor=data['raw']['scalars']['XPS_LI20_DWFA_M5']['dat']
+	ymotor=mt.derefdataset(ymotor,f)
+	ymotor=ymotor[0]
+	eaxis=mt.E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
 	
 	eaxis=eaxis[:-2]
 	variance=variance[:-2]
 	
-	# plt.plot(eaxis,variance,'.-')
+	print variance
+	print eaxis
+	plt.plot(eaxis,variance,'.-')
 	# locs,labels = plt.xticks()
 	# plt.xticks(locs,map(lambda x:"%0.2f" % x,locs))
-	# 
-	# plt.show()
+	
+	plt.show()
 	
 	# davg         = (hist_data[:,0]-1)
 	# variance_old = hist_data[:,1]
