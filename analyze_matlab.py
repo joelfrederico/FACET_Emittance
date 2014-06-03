@@ -135,13 +135,14 @@ def analyze_matlab(f=None,
 	if camname=='ELANEX':
 		ymotor=data['raw']['scalars']['XPS_LI20_DWFA_M5']['dat']
 		ymotor=mt.derefdataset(ymotor,f)
-		ymotor=ymotor[0]
+		ymotor=ymotor[0]*1e-3
+		print 'Ymotor is {}'.format(ymotor)
 	else:
 		ymotor=None
 	eaxis=mt.E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
 	
-	eaxis=eaxis[:-2]
-	variance=variance[:-2]
+	# eaxis=eaxis[:-2]
+	# variance=variance[:-2]
 	
 	print variance
 	print eaxis
