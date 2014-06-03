@@ -132,9 +132,12 @@ def analyze_matlab(f=None,
 	
 	# eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660,img=oimg)
 	# eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660)
-	ymotor=data['raw']['scalars']['XPS_LI20_DWFA_M5']['dat']
-	ymotor=mt.derefdataset(ymotor,f)
-	ymotor=ymotor[0]
+	if camname=='ELANEX':
+		ymotor=data['raw']['scalars']['XPS_LI20_DWFA_M5']['dat']
+		ymotor=mt.derefdataset(ymotor,f)
+		ymotor=ymotor[0]
+	else:
+		ymotor=None
 	eaxis=mt.E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
 	
 	eaxis=eaxis[:-2]
@@ -142,7 +145,7 @@ def analyze_matlab(f=None,
 	
 	print variance
 	print eaxis
-	plt.plot(eaxis,variance,'.-')
+	# plt.plot(eaxis,variance,'.-')
 	# locs,labels = plt.xticks()
 	# plt.xticks(locs,map(lambda x:"%0.2f" % x,locs))
 	
