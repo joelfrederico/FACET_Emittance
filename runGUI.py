@@ -20,3 +20,4 @@ window = ButterflyGUI(analyze_matlab,f)
 # window.ui.imageview_mpl.img.image=img
 window.show()
 app.exec_()
+

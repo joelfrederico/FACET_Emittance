@@ -23,21 +23,36 @@ class ButterflyGUI(QtGui.QMainWindow):
 			self.camname = infile['camname']
 			self.camname = mt.derefstr(self.camname)
 			imgstr = self.data['raw']['images'][self.camname]
-			self.oimg   = mt.E200.E200_load_images(imgstr,infile)
-			self.oimg   = self.oimg[self.imgnum-1,:,:]
+			uids = imgstr['UID']
+			uids = uids[self.imgnum-1]
+			self.oimg   = mt.E200.E200_load_images(imgstr,infile,uids)
+			self.oimg   = self.oimg[0]
+			if self.camname=='ELANEX':
+				self.oimg = np.rot90(self.oimg)
 			self.ui.imageview_mpl.image = self.oimg
 			self.ui.imageview_mpl.setSliderValue(3600)
-
+			
 			rect = self.ui.imageview_mpl.rect
-			x0 = 275
-			x1 = 325
-			y0 = 1870
-			y1 = 1900
+			if self.camname=='CMOS_FAR':
+				x0 = 275
+				x1 = 325
+				y0 = 1870
+				y1 = 1900
+				border=50
+			elif self.camname=='ELANEX':
+				print 'Elanex'
+				x0=0 + 50
+				x1=self.ui.imageview_mpl.image.shape[0] - 50
+				y0=0 + 50
+				y1=self.ui.imageview_mpl.image.shape[1] - 50
+				print y1
+				border=50
+				
 			rect.set_width(y1 - y0)
 			rect.set_height(x1 - x0)
 			rect.set_xy((y0, x0))
 
-			self.ui.imageview_mpl.zoom_rect(border=50)
+			self.ui.imageview_mpl.zoom_rect(border=border)
 
 
 	def gaussfit_update(self,val):
@@ -48,7 +63,6 @@ class ButterflyGUI(QtGui.QMainWindow):
 		ax.set_title('Gauss Fit, Slice {}'.format(val))
 
 		ax.figure.canvas.draw()
-
 
 	def run_sim(self):
 		print 'Clicked!'
