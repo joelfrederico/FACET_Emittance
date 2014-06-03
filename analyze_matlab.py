@@ -11,6 +11,11 @@ import copy
 import h5py as h5
 import matplotlib as mpl
 
+class AnalysisResults(object):
+	def __init__(self):
+		pass
+		# self.
+
 
 def analyze_matlab(f=None,
 		data=None,
@@ -109,6 +114,7 @@ def analyze_matlab(f=None,
 	
 	num_pts = n_groups
 	variance  = np.zeros(num_pts)
+	gaussresults = np.empty(num_pts,object)
 	stddev    = np.zeros(num_pts)
 	varerr    = np.zeros(num_pts)
 	chisq_red = np.zeros(num_pts)
@@ -118,8 +124,9 @@ def analyze_matlab(f=None,
 		y = np.append(y,ystart+n_rows*i+(n_rows-1.)/2.)
 		# plt.plot(x_meter,sum_x)
 		# plt.show()
-		popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,sum_x,sigma_y=np.sqrt(sum_x),plot=False,variance_bool=True,verbose=False,background_bool=True)
-		variance[i]         = popt[2]
+		# popt,pcov,chisq_red[i] = mt.gaussfit(x_meter,sum_x,sigma_y=np.sqrt(sum_x),plot=False,variance_bool=True,verbose=False,background_bool=True)
+		gaussresults[i] = mt.gaussfit(x_meter,sum_x,sigma_y=np.sqrt(sum_x),plot=False,variance_bool=True,verbose=False,background_bool=True)
+		variance[i]         = gaussresults[i].popt[2]
 		# varerr[i]           = pcov[2,2]
 		# stddev[i]           = np.sqrt(pcov[2,2])
 	
@@ -191,6 +198,7 @@ def analyze_matlab(f=None,
 			axes = plotaxes,
 			error=used_error)
 	plt.show()
+	return gaussresults
 
 if __name__ == '__main__':
 	analyze_matlab()

@@ -33,24 +33,26 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <zorder></zorder>
+          <zorder></zorder>
          </widget>
         </item>
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="roi_layout">
+       <layout class="QVBoxLayout" name="gaussfit_layout">
         <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+         <widget class="Mpl_Plot" name="gaussfit_mpl" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
+         </widget>
+        </item>
+        <item>
+         <widget class="Slider_and_Text" name="gaussfit_slider" native="true"/>
         </item>
        </layout>
       </item>
@@ -59,7 +61,7 @@
     <item>
      <layout class="QHBoxLayout" name="row2">
       <item>
-       <layout class="QVBoxLayout" name="spacer">
+       <layout class="QVBoxLayout" name="roiview_layout">
         <item>
          <widget class="Mpl_Image" name="roiview_mpl" native="true">
           <property name="sizePolicy">
@@ -124,6 +126,12 @@
   </customwidget>
   <customwidget>
    <class>Mpl_Image</class>
+   <extends>QWidget</extends>
+   <header>mplwidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Slider_and_Text</class>
    <extends>QWidget</extends>
    <header>mplwidget</header>
    <container>1</container>

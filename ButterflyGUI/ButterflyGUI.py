@@ -16,8 +16,6 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.setupUi(self)
 		self.ui.analyzebtn.clicked.connect(self.run_sim)
 
-		# self.ui.imageview_mpl.img.rectChanged.connect(self.updateROI)
-
 		if infile != None:
 			self.data   = infile['data']
 			self.imgnum = infile['imgnum'][0,0]
@@ -27,9 +25,6 @@ class ButterflyGUI(QtGui.QMainWindow):
 			imgstr = self.data['raw']['images'][self.camname]
 			self.oimg   = mt.E200.E200_load_images(imgstr,infile)
 			self.oimg   = self.oimg[self.imgnum-1,:,:]
-			# imgplot = self.ui.imageview_mpl.ax.imshow(oimg,interpolation='none')
-			# imgplot.set_clim(0,3600)
-			# self.ui.imageview_mpl.fig.colorbar(imgplot)
 			self.ui.imageview_mpl.image = self.oimg
 			self.ui.imageview_mpl.setSliderValue(3600)
 
@@ -43,12 +38,23 @@ class ButterflyGUI(QtGui.QMainWindow):
 			rect.set_xy((y0, x0))
 
 			self.ui.imageview_mpl.zoom_rect(border=50)
-			
+
+
+	def gaussfit_update(self,val):
+		ax=self.ui.gaussfit_mpl.ax
+		ax.clear()
+		gauss_result = self.gaussresults[val-1]
+		gauss_result.plot(ax)
+		ax.set_title('Gauss Fit, Slice {}'.format(val))
+
+		ax.figure.canvas.draw()
+
+
 	def run_sim(self):
 		print 'Clicked!'
 		self.ui.fitview_mpl.ax.clear()
 		self.ui.roiview_mpl.ax.clear()
-		self.analyzefcn(f=self.infile,
+		self.gaussresults = self.analyzefcn(f=self.infile,
 				data=self.data,
 				camname=self.camname,
 				imgnum=self.imgnum,
@@ -61,8 +67,13 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.fitview_mpl.ax.figure.canvas.draw()
 		self.ui.roiview_mpl.ax.figure.canvas.draw()
 
-	def slider_change(self,val,name):
-		getattr(self.ui,name).setText(str(val))
+		self.ui.gaussfit_slider.setMinimum(1)
+		self.ui.gaussfit_slider.setMaximum(self.gaussresults.shape[0])
+		self.ui.gaussfit_slider.valueChanged.connect(self.gaussfit_update)
+		self.gaussfit_update(1)
+
+	# def slider_change(self,val,name):
+	#         getattr(self.ui,name).setText(str(val))
 
 	def updateROI(self,rect):
 		img=self.oimg[xstart:xstop,ystart:ystop]
