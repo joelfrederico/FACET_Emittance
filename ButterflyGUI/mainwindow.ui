@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>852</width>
-    <height>669</height>
+    <width>856</width>
+    <height>946</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,80 +22,138 @@
    </property>
    <layout class="QVBoxLayout" name="centralWidget_verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="row1">
+     <layout class="QVBoxLayout" name="shot_analysis_layout" stretch="1,1,0,1">
       <item>
-       <layout class="QVBoxLayout" name="image_layout">
+       <layout class="QHBoxLayout" name="row1">
         <item>
-         <widget class="Mpl_Image_Plus_Slider" name="imageview_mpl" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <zorder></zorder>
-          <zorder></zorder>
-         </widget>
+         <layout class="QVBoxLayout" name="image_layout">
+          <item>
+           <widget class="Mpl_Image_Plus_Slider" name="imageview_mpl" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="gaussfit_layout" stretch="0,0">
+          <item>
+           <widget class="Mpl_Plot" name="gaussfit_mpl" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Slider_and_Text" name="gaussfit_slider" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="gaussfit_layout">
+       <layout class="QHBoxLayout" name="row2" stretch="1,1">
         <item>
-         <widget class="Mpl_Plot" name="gaussfit_mpl" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
+         <layout class="QVBoxLayout" name="roiview_layout">
+          <item>
+           <widget class="Mpl_Image" name="roiview_mpl" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="Slider_and_Text" name="gaussfit_slider" native="true"/>
+         <layout class="QVBoxLayout" name="fit_layout" stretch="0">
+          <item>
+           <widget class="Mpl_Plot" name="fitview_mpl" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="analyzebtn">
+        <property name="text">
+         <string>Redo Analysis</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="row3" stretch="1,1">
+        <item>
+         <layout class="QVBoxLayout" name="dataset_info_layout">
+          <item>
+           <widget class="QTextBrowser" name="textBrowser">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+              <horstretch>1</horstretch>
+              <verstretch>3</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="usedatapoint">
+            <property name="text">
+             <string>Valid data point</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Slider_and_Text" name="dataset_scroll" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="dataset_mpl_layout">
+          <item>
+           <widget class="Mpl_Plot" name="dataset_mpl_2" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+              <horstretch>1</horstretch>
+              <verstretch>3</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
      </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="row2">
-      <item>
-       <layout class="QVBoxLayout" name="roiview_layout">
-        <item>
-         <widget class="Mpl_Image" name="roiview_mpl" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QVBoxLayout" name="fit_layout" stretch="0">
-        <item>
-         <widget class="Mpl_Plot" name="fitview_mpl" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QPushButton" name="analyzebtn">
-      <property name="text">
-       <string>Redo Analysis</string>
-      </property>
-     </widget>
     </item>
    </layout>
   </widget>
@@ -104,11 +162,29 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>852</width>
+     <width>856</width>
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open...</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save...</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
