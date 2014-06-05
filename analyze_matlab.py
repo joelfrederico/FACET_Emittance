@@ -129,28 +129,37 @@ def analyze_matlab(f=None,
 		variance[i]         = gaussresults[i].popt[2]
 		# varerr[i]           = pcov[2,2]
 		# stddev[i]           = np.sqrt(pcov[2,2])
+
+	# ======================================
+	# Remove nan from arrays
+	# ======================================
+	nan_ind = np.logical_not(np.isnan(variance))
+	variance=variance[nan_ind]
+	# gaussresults = gaussresults[nan_ind]
+	stddev    = stddev[nan_ind]
+	varerr    = varerr[nan_ind]
+	chisq_red = chisq_red[nan_ind]
+	y = y[nan_ind]
 	
-	# eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660,img=oimg)
-	# eaxis=mt.E200.eaxis(y=y,res=res,E0=20.35,etay=0,etapy=0,ypinch=1660)
+	# ======================================
+	# Get energy axis
+	# ======================================
 	if camname=='ELANEX':
 		ymotor=data['raw']['scalars']['XPS_LI20_DWFA_M5']['dat']
 		ymotor=mt.derefdataset(ymotor,f)
 		ymotor=ymotor[0]*1e-3
-		print 'Ymotor is {}'.format(ymotor)
+		# print 'Ymotor is {}'.format(ymotor)
 	else:
 		ymotor=None
 	eaxis=mt.E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
 	
-	# eaxis=eaxis[:-2]
-	# variance=variance[:-2]
 	
-	print variance
+	# print variance
 	print eaxis
 	# plt.plot(eaxis,variance,'.-')
 	# locs,labels = plt.xticks()
 	# plt.xticks(locs,map(lambda x:"%0.2f" % x,locs))
-	
-	plt.show()
+	# plt.show()
 	
 	# davg         = (hist_data[:,0]-1)
 	# variance_old = hist_data[:,1]
@@ -182,7 +191,7 @@ def analyze_matlab(f=None,
 	chisq_factor = 1e-28
 	# used_error   = stddev*np.sqrt(chisq_factor)
 	used_error   = variance*np.sqrt(chisq_factor)
-	
+
 	# ======================================
 	# Fit beamline scan
 	# ======================================
@@ -207,6 +216,7 @@ def analyze_matlab(f=None,
 			axes = plotaxes,
 			error=used_error)
 	plt.show()
+	
 	return gaussresults
 
 if __name__ == '__main__':

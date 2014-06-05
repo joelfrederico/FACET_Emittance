@@ -109,7 +109,10 @@
         <item>
          <layout class="QVBoxLayout" name="dataset_info_layout">
           <item>
-           <widget class="QTextBrowser" name="textBrowser">
+           <widget class="QComboBox" name="camname_combobox"/>
+          </item>
+          <item>
+           <widget class="QTextBrowser" name="imagenum_text">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
               <horstretch>1</horstretch>
@@ -119,19 +122,22 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="usedatapoint">
+           <widget class="QCheckBox" name="imagenum_valid_checkbox">
             <property name="text">
              <string>Valid data point</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="Slider_and_Text" name="dataset_scroll" native="true">
+           <widget class="Slider_and_Text" name="imagenum_slider" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="mouseTracking">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -140,7 +146,7 @@
         <item>
          <layout class="QVBoxLayout" name="dataset_mpl_layout">
           <item>
-           <widget class="Mpl_Plot" name="dataset_mpl_2" native="true">
+           <widget class="Mpl_Plot" name="dataset_mpl" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
               <horstretch>1</horstretch>
