@@ -12,10 +12,10 @@ import h5py as h5
 import matplotlib as mpl
 
 class AnalysisResults(object):
-	def __init__(self):
-		pass
-		# self.
-
+	def __init__(self,gaussfits,scanfit,eaxis):
+		self.gaussfits = gaussfits
+		self.scanfit = scanfit
+		self.eaxis = eaxis
 
 def analyze_matlab(f=None,
 		data=None,
@@ -195,29 +195,46 @@ def analyze_matlab(f=None,
 	# ======================================
 	# Fit beamline scan
 	# ======================================
-	out = bt.fitBeamlineScan(beamline_array,
+	scanresults = bt.fitBeamlineScan(beamline_array,
 			variance,
 			emitx,
 			error=used_error,
 			verbose=True,
-			plot=False)
+			plot=False,
+			eaxis=eaxis)
 	
 	# ======================================
 	# Plot results
 	# ======================================
 	mpl.rcParams.update({'font.size':12})
+
 	bt.plotfit(eaxis,
 			variance,
-			out.beta,
-			out.X_unweighted,
+			scanresults.fitresults.beta,
+			scanresults.fitresults.X_unweighted,
 			top='Emittance/Twiss Fit to Witness Butterfly',
 			figlabel='Butterfly Fit',
 			bottom='Energy [GeV]',
 			axes = plotaxes,
-			error=used_error)
+			error=used_error
+			)
 	plt.show()
-	
-	return gaussresults
 
-if __name__ == '__main__':
-	analyze_matlab()
+	out = AnalysisResults(gaussresults,scanresults,eaxis)
+	
+	return out
+
+# if __name__ == '__main__':
+#         parser=argparse.ArgumentParser(description='Loads and runs a gui to analyze saved spectrometer data.')
+#         parser.add_argument('-v','--verbose',action='store_true',)
+#                         help='Verbose mode.')
+#         parser.add_argument('-p','--port',default=7777,type=int,
+#                         help='Local port to listen on.')
+#         parser.add_argument('-s1','--server1',default='mcclogin',
+#                         help='First server hop.')
+#         parser.add_argument('-s2','--server2',default='ar-frederico',
+#                         help='Second server hop.')
+#         parser.add_argument('-su','--stanford',action='store_true',
+#                         help='Tunnel through Stanford')
+#         arg=parser.parse_args()
+#         analyze_matlab(arg.filename)

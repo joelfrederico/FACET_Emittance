@@ -161,6 +161,13 @@
       </item>
      </layout>
     </item>
+    <item>
+     <widget class="QPushButton" name="saveworld">
+      <property name="text">
+       <string>Save the World!</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">

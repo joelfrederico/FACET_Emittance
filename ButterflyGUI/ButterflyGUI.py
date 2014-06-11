@@ -5,14 +5,18 @@ import sys
 from PyQt4 import QtGui,QtCore
 import mainwindow_auto as mw
 import numpy as np
+import cPickle
 
 class ButterflyGUI(QtGui.QMainWindow):
-	def __init__(self,analyzefcn,infile=None):
+	def __init__(self,analyzefcn,dataset=None,camname=None,imgnum=None):
 		# ======================================
 		# Save default info
 		# ======================================
 		self.analyzefcn = analyzefcn
-		self.infile=infile
+		self.data=dataset.data
+		self.infile=dataset._f
+		self.camname=camname
+		self.imgnum=imgnum
 
 		# ======================================
 		# Initialize class
@@ -25,7 +29,6 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui = mw.Ui_MainWindow()
 		self.ui.setupUi(self)
 
-
 		# ======================================
 		# Connect "Redo Analysis" button
 		# ======================================
@@ -34,11 +37,19 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		# Load file passed in
 		# ======================================
-		if self.infile != None:
-			self.camname = infile['camname']
-			self.camname = mt.derefstr(self.camname)
-			self.imgnum = infile['imgnum'][0,0]
-			self.loadfile(camname=self.camname,imgnum=self.imgnum)
+		# if self.infile != None:
+			# self.camname = infile['camname']
+			# self.camname = mt.derefstr(self.camname)
+			# self.imgnum = infile['imgnum'][0,0]
+			# self.loadfile(camname=self.camname,imgnum=self.imgnum)
+		if camname==None:
+			camname=self.data['raw']['images'].keys()
+			camname=camname[0]
+		if imgnum==None:
+			imgnum=1
+		print camname
+		print imgnum
+		self.loadfile(camname,imgnum)
 
 		self.ui.imageview_mpl.setSliderValue(3600)
 
@@ -53,6 +64,19 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# Disable tracking
 		self.ui.imagenum_slider.setTracking(False)
 		self.ui.imagenum_slider.valueChanged.connect(self.imagenum_slider_changed)
+
+		# ======================================
+		# Connect camname_combobox
+		# ======================================
+		self.ui.imagenum_valid_checkbox.stateChanged.connect(self.updateResults)
+
+		self.ui.saveworld.clicked.connect(self.saveworld)
+
+	def saveworld(self):
+		output = open('mydata.pkl','wb')
+		mypickle = cPickle.dump(self.fitresults,output,-1)
+		output.close()
+		print 'The world is safe!'
 
 	def imagenum_slider_changed(self,val=None):
 		if val!=None:
@@ -90,6 +114,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		rect.set_xy((y0, x0))
 
 		self.ui.imageview_mpl.zoom_rect(border=border)
+		self.ui.imagenum_valid_checkbox.setChecked(self.validimg[self.imgnum-1])
 		# self.run_sim()
 
 	def camname_combobox_changed(self):
@@ -110,7 +135,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.camname = camname
 	
 		self.imgnum = imgnum
-		self.data   = self.infile['data']
+		# self.data   = self.infile['data']
 
 		self.allimgs = self.loadimages()
 		# self.oimg   = self.oimg[0]
@@ -119,7 +144,20 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.set_camnames(self.infile,camname=self.camname)
 
 		# self.ui.imagenum_slider.setValue(self.imgnum)
-		self.setup_imagenum_slider(self.infile,imgnum)
+		# self.setup_imagenum_slider(self.infile,imgnum)
+		# camname = str(self.ui.camname_combobox.currentText())
+		numimgs = self.infile['data']['raw']['images'][camname]['UID'].shape[0]
+		print 'Number of images is {}'.format(numimgs)
+		self.ui.imagenum_slider.setMinimum(1)
+		self.ui.imagenum_slider.setMaximum(numimgs)
+		self.ui.imagenum_slider.setValue(imgnum)
+
+		# =====================================
+		# Set arrays for storing fit data
+		# =====================================
+		self.validimg = np.zeros(numimgs,dtype=np.bool)
+		self.fitresults = np.empty(numimgs,dtype=object)
+
 		self.imagenum_slider_changed()
 		print 'Finished loading'
 
@@ -134,28 +172,22 @@ class ButterflyGUI(QtGui.QMainWindow):
 			camname_index = np.where(self.camnames==camname)
 			self.ui.camname_combobox.setCurrentIndex(camname_index[0])
 
-	def setup_imagenum_slider(self,f,imgnum=1):
-		camname = str(self.ui.camname_combobox.currentText())
-		numimgs = f['data']['raw']['images'][camname]['UID'].shape[0]
-		print 'Number of images is {}'.format(numimgs)
-		self.ui.imagenum_slider.setMinimum(1)
-		self.ui.imagenum_slider.setMaximum(numimgs)
-		self.ui.imagenum_slider.setValue(imgnum)
+	# def setup_imagenum_slider(self,f,imgnum=1):
 
 	def gaussfit_update(self,val):
 		ax=self.ui.gaussfit_mpl.ax
 		ax.clear()
-		gauss_result = self.gaussresults[val-1]
+		gauss_result = self.out.gaussfits[val-1]
 		gauss_result.plot(ax)
 		ax.set_title('Gauss Fit, Slice {}'.format(val))
 
 		ax.figure.canvas.draw()
 
 	def run_sim(self):
-		print 'Clicked!'
+		print 'Running sim!'
 		self.ui.fitview_mpl.ax.clear()
 		self.ui.roiview_mpl.ax.clear()
-		self.gaussresults = self.analyzefcn(f=self.infile,
+		self.out = self.analyzefcn(f=self.infile,
 				data=self.data,
 				camname=self.camname,
 				imgnum=self.imgnum,
@@ -169,12 +201,40 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.roiview_mpl.ax.figure.canvas.draw()
 
 		self.ui.gaussfit_slider.setMinimum(1)
-		self.ui.gaussfit_slider.setMaximum(self.gaussresults.shape[0])
+		self.ui.gaussfit_slider.setMaximum(self.out.gaussfits.shape[0])
 		self.ui.gaussfit_slider.valueChanged.connect(self.gaussfit_update)
+
 		self.gaussfit_update(1)
+
+		ind = self.ui.imagenum_slider.value-1
+		self.fitresults[ind] = self.out
+
+		self.updateEmitPlot()
+
+	def updateEmitPlot(self):
+		validresults = self.fitresults[self.validimg]
+		self.emit = np.empty(validresults.shape[0])
+		print validresults
+		print validresults.shape
+		print type(validresults)
+		for i,val in enumerate(validresults):
+			# print 'Here'
+			# print val
+			self.emit[i] = val.scanfit.fitresults.emit
+			# print self.emit[i]
+
+		ax=self.ui.dataset_mpl.ax
+		ax.clear()
+		# print self.emit
+		ax.plot(self.emit)
+		ax.figure.canvas.draw()
 
 	# def slider_change(self,val,name):
 	#         getattr(self.ui,name).setText(str(val))
+
+	def updateResults(self,val):
+		ind = self.ui.imagenum_slider.value-1
+		self.validimg[ind] = np.bool(val)
 
 	def updateROI(self,rect):
 		img=self.oimg[xstart:xstop,ystart:ystop]
