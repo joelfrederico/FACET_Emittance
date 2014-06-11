@@ -1,4 +1,5 @@
 .*
+*.pkl
 *.local_files
 *.autosave
 *_auto.py
