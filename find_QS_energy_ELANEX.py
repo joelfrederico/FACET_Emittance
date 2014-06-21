@@ -37,9 +37,9 @@ def find_QS_energy_ELANEX(E):
 	res = spopt.minimize(meritfunc,[250,-150],tol=1e-50)
 	return res
 
-this=find_QS_energy_ELANEX(0)
-vec0=this.x
 def find_QS_relaxed(E):
+	this=find_QS_energy_ELANEX(0)
+	vec0=this.x
 	def meritfunc(vec):
 		# This is the default energy for beamlines.
 		E0=20.35
