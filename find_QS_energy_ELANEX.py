@@ -4,7 +4,6 @@ import scipy.optimize as spopt
 import mytools.slactrac as sltr
 import numpy as np
 
-
 def find_QS_energy_ELANEX(E):
 	def meritfunc(vec):
 		E0=20.35
