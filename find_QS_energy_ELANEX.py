@@ -3,38 +3,78 @@ import mytools.E200 as E200
 import scipy.optimize as spopt
 import mytools.slactrac as sltr
 import numpy as np
+import copy
 
-def find_QS_energy_ELANEX(E):
+def setquads(beamline,vec):
+	# qs1_k_half = E200.setQS.bdes2K1(vec[0],E0)
+	# qs2_k_half = E200.setQS.bdes2K1(vec[1],E0)
+	vec = np.float64(vec)
+	# print vec
+	qs1_k_half = vec[0]
+	qs2_k_half = vec[1]
+
+	beamline.elements[1].K1 = qs1_k_half
+	beamline.elements[2].K1 = qs1_k_half
+	beamline.elements[4].K1 = qs2_k_half
+	beamline.elements[5].K1 = qs2_k_half
+
+	return beamline
+
+def find_QS_energy(beamline,
+		E,
+		twiss_x=sltr.Twiss(beta=0.5,alpha=0),
+		twiss_y=sltr.Twiss(beta=5.0,alpha=0)
+		):
+
+	beamline0=copy.deepcopy(beamline)
+	beamline0.gamma = sltr.GeV2gamma(E)
+
 	def meritfunc(vec):
-		E0=20.35
-		twiss_x = sltr.Twiss(beta=0.5,
-			   alpha=0
-			   )
-		twiss_y = sltr.Twiss(beta=5.0,
-			   alpha=0
-			   )
-		# Get beamline
-		beamline=bt.beamlines.IP_to_lanex_nobend(twiss_x=twiss_x,twiss_y=twiss_y)
-		beamline.gamma = beamline.gamma * (E+E0)/E0
-		# if E < 0:
-		#         print 'E is {}, Gamma is {}'.format(E,beamline.gamma)
+		# Set up variables
+		vec = np.float64(vec)
+		beamline = copy.deepcopy(beamline0)
 	
 		# Change quads
-		qs1_k_half = E200.setQS.bdes2K1(vec[0],E0)
-		qs2_k_half = E200.setQS.bdes2K1(vec[1],E0)
+		beamline = setquads(beamline,vec)
 		
-		beamline.elements[1].K1 = qs1_k_half
-		beamline.elements[2].K1 = qs1_k_half
-		beamline.elements[4].K1 = qs2_k_half
-		beamline.elements[5].K1 = qs2_k_half
-		
+		# Get r values
 		r12 = beamline.R[0,1]
 		r34 = beamline.R[2,3]
 
-		return r12**2 + r34**2
+		# Merit value
+		out = r12**2 + r34**2
+		# out = out * 1e8
+		# print out
+		return out
 
-	res = spopt.minimize(meritfunc,[250,-150],tol=1e-50)
-	return res
+	guessKvec   = np.array([E200.setQS.bdes2K1(250,20.35),E200.setQS.bdes2K1(-150,20.35)])
+	res         = spopt.minimize(meritfunc,guessKvec,tol=1e-5)
+	beamlineout = setquads(beamline0,res.x)
+	return beamlineout
+
+def find_QS_energy_cherfar(E):
+	E  = np.float64(E)
+	E0 = np.float64(20.35)
+
+	twiss_x=sltr.Twiss(beta=0.5,alpha=0)
+	twiss_y=sltr.Twiss(beta=5.0,alpha=0)
+	beamline0 = bt.beamlines.IP_to_cherfar(twiss_x=twiss_x,twiss_y=twiss_y)
+
+	beamlineout = find_QS_energy(beamline0,E+E0)
+
+	return beamlineout
+
+def find_QS_energy_ELANEX(E):
+	E  = np.float64(E)
+	E0 = np.float64(20.35)
+
+	twiss_x=sltr.Twiss(beta=0.5,alpha=0)
+	twiss_y=sltr.Twiss(beta=5.0,alpha=0)
+	beamline0 = bt.beamlines.IP_to_lanex(twiss_x=twiss_x,twiss_y=twiss_y)
+
+	beamlineout = find_QS_energy(beamline0,E+E0)
+
+	return beamlineout
 
 def find_QS_relaxed(E):
 	this=find_QS_energy_ELANEX(0)
@@ -95,7 +135,7 @@ def find_QS_relaxed(E):
 
 		out=(sx2-sx1)**2 + (sx1-sx0)**2 + (sy1-sy0)**2
 		# out=(sx1-sx0)**2 + (sy1-sy0)**2
-		print out
+		# print out
 		# return out
 
 		r12 = beamline.R[0,1] * 1000
