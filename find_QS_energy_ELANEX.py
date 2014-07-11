@@ -1,4 +1,5 @@
 import ButterflyEmittancePython as bt
+import mytools as mt
 import mytools.E200 as E200
 import scipy.optimize as spopt
 import mytools.slactrac as sltr
@@ -21,10 +22,7 @@ def setquads(beamline,vec):
 	return beamline
 
 def find_QS_energy(beamline,
-		E,
-		twiss_x=sltr.Twiss(beta=0.5,alpha=0),
-		twiss_y=sltr.Twiss(beta=5.0,alpha=0)
-		):
+		E):
 
 	beamline0=copy.deepcopy(beamline)
 	beamline0.gamma = sltr.GeV2gamma(E)
@@ -48,7 +46,7 @@ def find_QS_energy(beamline,
 		return out
 
 	guessKvec   = np.array([E200.setQS.bdes2K1(250,20.35),E200.setQS.bdes2K1(-150,20.35)])
-	res         = spopt.minimize(meritfunc,guessKvec,tol=1e-5)
+	res         = spopt.minimize(meritfunc,guessKvec,tol=1e-8)
 	beamlineout = setquads(beamline0,res.x)
 	return beamlineout
 
@@ -56,9 +54,9 @@ def find_QS_energy_cherfar(E):
 	E  = np.float64(E)
 	E0 = np.float64(20.35)
 
-	twiss_x=sltr.Twiss(beta=0.5,alpha=0)
-	twiss_y=sltr.Twiss(beta=5.0,alpha=0)
-	beamline0 = bt.beamlines.IP_to_cherfar(twiss_x=twiss_x,twiss_y=twiss_y)
+	beam_x=sltr.BeamParams(beta=0.5,alpha=0,emit_n=20e-6,gamma=sltr.GeV2gamma(E+E0))
+	beam_y=sltr.BeamParams(beta=5.0,alpha=0,emit_n=20e-6,gamma=sltr.GeV2gamma(E+E0))
+	beamline0 = bt.beamlines.IP_to_cherfar(beam_x=beam_x,beam_y=beam_y)
 
 	beamlineout = find_QS_energy(beamline0,E+E0)
 
@@ -68,9 +66,9 @@ def find_QS_energy_ELANEX(E):
 	E  = np.float64(E)
 	E0 = np.float64(20.35)
 
-	twiss_x=sltr.Twiss(beta=0.5,alpha=0)
-	twiss_y=sltr.Twiss(beta=5.0,alpha=0)
-	beamline0 = bt.beamlines.IP_to_lanex(twiss_x=twiss_x,twiss_y=twiss_y)
+	beam_x=sltr.BeamParams(beta=0.5,alpha=0,emit_n=20e-6,gamma=sltr.GeV2gamma(E+E0))
+	beam_y=sltr.BeamParams(beta=5.0,alpha=0,emit_n=20e-6,gamma=sltr.GeV2gamma(E+E0))
+	beamline0 = bt.beamlines.IP_to_lanex(beam_x=beam_x,beam_y=beam_y)
 
 	beamlineout = find_QS_energy(beamline0,E+E0)
 
@@ -89,14 +87,14 @@ def find_QS_relaxed(E):
 		emit_nx = np.float64(100e-6)
 		emit_ny = np.float64(10e-6)
 
-		# Starting twiss
-		twiss_x = sltr.Twiss(beta=0.5,
-			   alpha=0
+		# Starting BeamParams
+		beam_x = sltr.BeamParams(beta=0.5,
+			   alpha=0,emit_n=20e-6,gamma=sltr.GeV2gamma(20.35)
 			   )
-		twiss_y = sltr.Twiss(beta=5,
-			   alpha=0
+		beam_y = sltr.BeamParams(beta=5,
+			   alpha=0,emit_n=20e-6,gamma=sltr.GeV2gamma(20.35)
 			   )
-		beamline=bt.beamlines.IP_to_lanex_nobend(twiss_x,twiss_y)
+		beamline=bt.beamlines.IP_to_lanex_nobend(beam_x,beam_y)
 		qs1_k_half = E200.setQS.bdes2K1(vec0[0],E0)
 		qs2_k_half = E200.setQS.bdes2K1(vec0[1],E0)
 		beamline.elements[1].K1 = qs1_k_half
