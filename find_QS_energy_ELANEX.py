@@ -14,10 +14,10 @@ def setquads(beamline,vec):
 	qs1_k_half = vec[0]
 	qs2_k_half = vec[1]
 
-	beamline.elements[1].K1 = qs1_k_half
-	beamline.elements[2].K1 = qs1_k_half
-	beamline.elements[4].K1 = qs2_k_half
-	beamline.elements[5].K1 = qs2_k_half
+	beamline.elements[3].K1 = qs1_k_half
+	beamline.elements[4].K1 = qs1_k_half
+	beamline.elements[6].K1 = qs2_k_half
+	beamline.elements[7].K1 = qs2_k_half
 
 	return beamline
 
@@ -41,13 +41,16 @@ def find_QS_energy(beamline,
 
 		# Merit value
 		out = r12**2 + r34**2
-		# out = out * 1e8
+		out = out * 1e2
 		# print out
 		return out
 
 	guessKvec   = np.array([E200.setQS.bdes2K1(250,20.35),E200.setQS.bdes2K1(-150,20.35)])
-	res         = spopt.minimize(meritfunc,guessKvec,tol=1e-8)
+	res         = spopt.minimize(meritfunc,guessKvec,tol=1e-5)
 	beamlineout = setquads(beamline0,res.x)
+	if res.success==False:
+		print res
+		raise RuntimeError('Optimization did not converge.')
 	return beamlineout
 
 def find_QS_energy_cherfar(E):
