@@ -5,7 +5,7 @@ import sys
 from PyQt4 import QtGui,QtCore
 import mainwindow_auto as mw
 import numpy as np
-import cPickle
+import h5py as h5
 
 class ButterflyGUI(QtGui.QMainWindow):
 	def __init__(self,analyzefcn,dataset=None,camname=None,imgnum=None):
@@ -72,11 +72,40 @@ class ButterflyGUI(QtGui.QMainWindow):
 
 		self.ui.saveworld.clicked.connect(self.saveworld)
 
+		# =========================================
+		# Configure and Connect plot type selector
+		# =========================================
+		self.ui.plottype.clear()
+		self.plotoptions = np.array([
+			['Normalized Emittance', lambda val:val.scanfit.fitresults.emitn],
+			['Beta', lambda val:val.scanfit.fitresults.twiss.beta],
+			['Beta*', lambda val:val.scanfit.fitresults.twiss.betastar],
+			['Alpha', lambda val:val.scanfit.fitresults.twiss.alpha],
+			['s*', lambda val:val.scanfit.fitresults.twiss.sstar],
+			['MinSpot', lambda val:val.scanfit.fitresults.twiss.minspotsize(val.scanfit.fitresults.emit)],
+			['Geometric Emittance',lambda val:val.scanfit.fitresults.emit]
+			])
+		self.ui.plottype.addItems(self.plotoptions[:,0])
+		# self.ui.plottype.addItems(['emit','emitn'])
+		self.ui.plottype.currentIndexChanged.connect(self.plotdataset)
+
+	def plotdataset(self,ind=None):
+		if ind==None:
+			ind=self.ui.plottype.currentIndex()
+		selected_fits=self.fitresults[self.validimg]
+		x = np.vectorize(self.plotoptions[ind,1])
+		self.ui.dataset_mpl.plot(x(selected_fits))
+		print self.plotoptions[ind,0]
+		print 'Attempted to plot!'
+
 	def saveworld(self):
-		output = open('mydata.pkl','wb')
-		mypickle = cPickle.dump(self.fitresults,output,-1)
-		output.close()
-		print 'The world is safe!'
+		try:
+			f = h5.File('data.hdf5','w-')
+		except IOError as e:
+			if e.message == 'Unable to create file (File exists)':
+				f = h5.File('data-{}.hdf5'.format(time.strftime('%Y-%m-%d-%H:%M:%S')),'w-')
+
+		mt.picklejar('mydata.pkl',fitresults=self.fitresults,valid=self.validimg)
 
 	def imagenum_slider_changed(self,val=None):
 		if val!=None:
@@ -220,7 +249,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		for i,val in enumerate(validresults):
 			# print 'Here'
 			# print val
-			self.emit[i] = val.scanfit.fitresults.emit
+			self.emit[i] = val.scanfit.fitresults.emitn
 			# print self.emit[i]
 
 		ax=self.ui.dataset_mpl.ax

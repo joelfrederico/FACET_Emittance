@@ -12,10 +12,28 @@ import h5py as h5
 import matplotlib as mpl
 
 class AnalysisResults(object):
-	def __init__(self,gaussfits,scanfit,eaxis):
+	def __init__(self,gaussfits,scanfit,eaxis,
+			img,yimg,imgeaxis,
+			oimg,yoimg,oimgeaxis,
+			xstart,xstop,
+			ystart,ystop,
+			res,x_meter
+			):
+		self.img = img
+		self.yimg = yimg
+		self.imgeaxis = imgeaxis
+		self.oimgeaxis = oimgeaxis
+		self.oimg = oimg
+		self.yoimg = yoimg
+		self.eaxis = eaxis
 		self.gaussfits = gaussfits
 		self.scanfit = scanfit
-		self.eaxis = eaxis
+		self.xstart = xstart
+		self.xstop = xstop
+		self.ystart = ystart
+		self.ystop = ystop
+		self.res = res
+		self.x_meter = x_meter
 
 def analyze_matlab(f=None,
 		data=None,
@@ -109,7 +127,7 @@ def analyze_matlab(f=None,
 	n_groups  = np.size(hist_vec)
 	# hist_data = np.zeros([n_groups,2])
 	x_pix     = np.round(mt.linspacestep(xstart,xstop-1,1))
-	x_meter   = (x_pix-np.mean(x_pix)) * res
+	x_meter   = (x_pix-np.mean(x_pix)) * res / np.sqrt(2)
 	x_sq      = x_meter**2
 	
 	num_pts = n_groups
@@ -152,6 +170,10 @@ def analyze_matlab(f=None,
 	else:
 		ymotor=None
 	eaxis=mt.E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	yimg = mt.linspacestep(1,img.shape[1])
+	imgeaxis=mt.E200.eaxis(camname=camname,y=yimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	yoimg = mt.linspacestep(1,oimg.shape[1])
+	oimgeaxis=mt.E200.eaxis(camname=camname,y=yoimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
 	
 	
 	# print variance
@@ -179,7 +201,7 @@ def analyze_matlab(f=None,
 	# Create beamlines
 	# ======================================
 	# beamline=bt.beamlines.IP_to_cherfar(twiss_x=twiss,twiss_y=twiss,gamma=gamma)
-	beamline=bt.beamlines.IP_to_cherfar(twiss_x=twiss,twiss_y=twiss)
+	beamline=bt.beamlines.IP_to_lanex(twiss_x=twiss,twiss_y=twiss)
 	beamline_array = np.array([])
 	for i,value in enumerate(eaxis):
 		beamline.gamma = value/5.109989e-4
@@ -201,7 +223,8 @@ def analyze_matlab(f=None,
 			error=used_error,
 			verbose=True,
 			plot=False,
-			eaxis=eaxis)
+			eaxis=eaxis
+			)
 	
 	# ======================================
 	# Plot results
@@ -213,6 +236,7 @@ def analyze_matlab(f=None,
 			scanresults.fitresults.beta,
 			scanresults.fitresults.X_unweighted,
 			top='Emittance/Twiss Fit to Witness Butterfly',
+			# top='Emittance and Beam Parameter Fit\nto Ionization-Injected Witness Bunch',
 			figlabel='Butterfly Fit',
 			bottom='Energy [GeV]',
 			axes = plotaxes,
@@ -220,7 +244,21 @@ def analyze_matlab(f=None,
 			)
 	plt.show()
 
-	out = AnalysisResults(gaussresults,scanresults,eaxis)
+	out = AnalysisResults(gaussresults,scanresults,
+			img       = img,
+			yimg      = yimg,
+			imgeaxis  = imgeaxis,
+			oimg      = oimg,
+			yoimg     = yoimg,
+			oimgeaxis = oimgeaxis,
+			eaxis     = eaxis,
+			xstart    = xstart,
+			xstop     = xstop,
+			ystart    = ystart,
+			ystop     = ystop,
+			res       = res,
+			x_meter   = x_meter
+			)
 	
 	return out
 

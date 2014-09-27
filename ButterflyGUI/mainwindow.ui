@@ -70,9 +70,9 @@
         <item>
          <layout class="QVBoxLayout" name="roiview_layout">
           <item>
-           <widget class="Mpl_Image" name="roiview_mpl" native="true">
+           <widget class="Mpl_Image_Plus_Slider" name="roiview_mpl" native="true">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+             <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -146,6 +146,9 @@
         <item>
          <layout class="QVBoxLayout" name="dataset_mpl_layout">
           <item>
+           <widget class="QComboBox" name="plottype"/>
+          </item>
+          <item>
            <widget class="Mpl_Plot" name="dataset_mpl" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
@@ -209,12 +212,6 @@
   </customwidget>
   <customwidget>
    <class>Mpl_Image_Plus_Slider</class>
-   <extends>QWidget</extends>
-   <header>mplwidget</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Mpl_Image</class>
    <extends>QWidget</extends>
    <header>mplwidget</header>
    <container>1</container>
