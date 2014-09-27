@@ -43,7 +43,7 @@ def find_QS_energy(beamline,
 
 		# Merit value
 		out = r12**2 + r34**2
-		# out = out * 1e8
+		# out = out * 1e2
 		# print out
 		return out
 
@@ -68,9 +68,11 @@ def find_QS_energy_ELANEX(E):
 	E  = np.float64(E)
 	E0 = np.float64(20.35)
 
-	twiss_x=sltr.Twiss(beta=0.5,alpha=0)
-	twiss_y=sltr.Twiss(beta=5.0,alpha=0)
-	beamline0 = bt.beamlines.IP_to_lanex(twiss_x=twiss_x,twiss_y=twiss_y)
+	# twiss_x=sltr.Twiss(beta=0.5,alpha=0)
+	# twiss_y=sltr.Twiss(beta=5.0,alpha=0)
+	twiss_x=sltr.BeamParams(beta=0.5,alpha=0,emit_n=10e-6,gamma=sltr.GeV2gamma(E))
+	twiss_y=sltr.BeamParams(beta=5.0,alpha=0,emit_n=10e-6,gamma=sltr.GeV2gamma(E))
+	beamline0 = bt.beamlines.IP_to_lanex(beam_x=twiss_x,beam_y=twiss_y)
 
 	beamlineout = find_QS_energy(beamline0,E+E0)
 

@@ -1,4 +1,6 @@
 .*
+*.hdf5
+*.old
 *.pkl
 *.local_files
 *.autosave

@@ -14,7 +14,9 @@ import numpy as np
 def runGUI(filename,camname,imgnum):
 	dataset=mt.E200.Data(filename)
 	
+	# Generate or retrieve qt app
 	app = mt.qt.get_app()
+
 	window = ButterflyGUI(analyze_matlab,dataset,camname,imgnum)
 	# img = np.random.randn(10,10)
 	# window = ButterflyGUI(analyze_matlab,image=img)

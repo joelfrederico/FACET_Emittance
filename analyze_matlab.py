@@ -177,7 +177,7 @@ def analyze_matlab(f=None,
 	
 	
 	# print variance
-	print eaxis
+	# print eaxis
 	# plt.plot(eaxis,variance,'.-')
 	# locs,labels = plt.xticks()
 	# plt.xticks(locs,map(lambda x:"%0.2f" % x,locs))
@@ -192,19 +192,21 @@ def analyze_matlab(f=None,
 	betax = 1
 	alphax = 0
 	gammax = (1+np.power(alphax,2))/betax
-	twiss    = sltr.Twiss(
+	twiss    = sltr.BeamParams(
 			beta  = 0.5,
-			alpha = 0
+			alpha = 0,
+			emit = emitx
 			)
 	
 	# ======================================
 	# Create beamlines
 	# ======================================
 	# beamline=bt.beamlines.IP_to_cherfar(twiss_x=twiss,twiss_y=twiss,gamma=gamma)
-	beamline=bt.beamlines.IP_to_lanex(twiss_x=twiss,twiss_y=twiss)
+	beamline=bt.beamlines.IP_to_lanex(beam_x=twiss,beam_y=twiss)
 	beamline_array = np.array([])
 	for i,value in enumerate(eaxis):
-		beamline.gamma = value/5.109989e-4
+		# beamline.gamma = value/5.109989e-4
+		beamline.gamma = sltr.GeV2gamma(value)
 		beamline_array = np.append(beamline_array,copy.deepcopy(beamline))
 	
 	# ======================================
@@ -219,7 +221,7 @@ def analyze_matlab(f=None,
 	# ======================================
 	scanresults = bt.fitBeamlineScan(beamline_array,
 			variance,
-			emitx,
+			# emitx,
 			error=used_error,
 			verbose=True,
 			plot=False,
