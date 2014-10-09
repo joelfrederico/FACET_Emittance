@@ -62,7 +62,7 @@ def analyze_matlab(f=None,
 	if imgnum == None:
 		imgnum = f['imgnum'][0,0]
 	# imgstr       = data['raw']['images']['CMOS_FAR']
-	imgstr       = data['raw']['images'][camname]
+	imgstr       = data['raw']['images'][str(camname)]
 	res = imgstr['RESOLUTION'][0,0]
 	res = res*1.0e-6
 	# print res
@@ -108,7 +108,7 @@ def analyze_matlab(f=None,
 	# imgdat=mt.E200.E200_api_getdat(imgstr,f)
 	if oimg==None:
 		oimg=mt.E200.E200_load_images(imgstr,f)
-		oimg=oimg[imgnum-1,:,:]
+		oimg=oimg.image[imgnum-1,:,:]
 	# oimg=np.fliplr(oimg)
 	img=oimg[xstart:xstop,ystart:ystop]
 	# plt.imshow(np.rot90(img,k=-1))

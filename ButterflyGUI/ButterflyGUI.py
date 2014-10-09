@@ -8,13 +8,15 @@ import numpy as np
 import h5py as h5
 
 class ButterflyGUI(QtGui.QMainWindow):
-	def __init__(self,analyzefcn,dataset=None,camname=None,imgnum=None):
+	def __init__(self,analyzefcn,dataset=None,camname=None,imgnum=None,verbose=False):
 		# ======================================
 		# Save default info
 		# ======================================
+		self.verbose=verbose
 		self.analyzefcn = analyzefcn
-		self.data=dataset.data
-		self.infile=dataset._f
+		self.dataset = dataset
+		self.data=dataset.read_file['data']
+		self.infile=dataset.read_file
 		self.camname=camname
 		self.imgnum=imgnum
 
@@ -52,6 +54,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.loadfile(camname,imgnum)
 
 		self.ui.imageview_mpl.setSliderValue(3600)
+		self.ui.imageview_mpl._img.rectChanged.connect(self.saverect)
 
 		# ======================================
 		# Connect camname_combobox
@@ -89,6 +92,26 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# self.ui.plottype.addItems(['emit','emitn'])
 		self.ui.plottype.currentIndexChanged.connect(self.plotdataset)
 
+	def saverect(self,rect):
+		ind = self.ui.imagenum_slider.value-1
+		uid = self.allimgs.uid[ind]
+		uid = uid[0]
+		# print 'UID to save: {:0.0f}'.format(uid)
+		processed = self.dataset.write_file['data']['processed']
+		vectors = processed['vectors']
+		scalars = processed['scalars']
+		rect_xy = np.array(rect.get_xy())
+		mt.E200.E200_api_updateUID(vectors['rect_xy'],rect_xy,uid)
+		mt.E200.E200_api_updateUID(scalars['width'],rect.get_width(),uid)
+		mt.E200.E200_api_updateUID(scalars['height'],rect.get_height(),uid)
+		self.data.file.flush()
+		print 'Saving to index {}, uid {:0.0f}'.format(ind,uid)
+		print 'Image number is {}'.format(self.imgnum)
+		print rect_xy
+		print rect.get_width()
+		print rect.get_height()
+		print 'saved'
+
 	def plotdataset(self,ind=None):
 		if ind==None:
 			ind=self.ui.plottype.currentIndex()
@@ -108,43 +131,116 @@ class ButterflyGUI(QtGui.QMainWindow):
 		mt.picklejar('mydata.pkl',fitresults=self.fitresults,valid=self.validimg)
 
 	def imagenum_slider_changed(self,val=None):
+		# ======================================
+		# Set the new image number
+		# ======================================
 		if val!=None:
 			self.imgnum=val
-		# self.setup_imagenum_slider(self.infile,img_num=self.imgnum)
-		print 'Image number is {}'.format(self.imgnum)
+		if self.verbose:
+			print 'Image number is {}'.format(self.imgnum)
 
+		# ======================================
+		# Open the right image for viewing
+		# ======================================
 		imgstr = self.data['raw']['images'][str(self.camname)]
-		# uids = imgstr['UID']
-		# uids = uids[self.imgnum-1]
-		# self.oimg   = mt.E200.E200_load_images(imgstr,self.infile,uids)
-		self.oimg   = self.allimgs[self.imgnum-1]
+		self.oimg   = self.allimgs.images[self.imgnum-1]
 		if self.camname=='ELANEX':
 			self.oimg = np.rot90(self.oimg)
 		self.ui.imageview_mpl.image = self.oimg
-		# self.ui.imageview_mpl.setSliderValue(3600)
 		
+		# ======================================
+		# See if rect info is stored for a UID
+		# ======================================
+		uid = self.allimgs.uid[self.imgnum-1]
+		# Print all UIDs
+		if self.verbose:
+			for val in self.allimgs.uid:
+				print '{:0.0f}'.format(val[0])
+		uid = uid[0]
 		rect = self.ui.imageview_mpl.rect
-		if self.camname=='CMOS_FAR':
-			x0 = 275
-			x1 = 325
-			y0 = 1870
-			y1 = 1900
-			border=250
-		elif self.camname=='ELANEX':
-			print 'Elanex'
-			x0=0 + 50
-			x1=self.ui.imageview_mpl.image.shape[0] - 50
-			y0=0 + 50
-			y1=self.ui.imageview_mpl.image.shape[1] - 50
-			border=50
-			
-		rect.set_width(y1 - y0)
-		rect.set_height(x1 - x0)
-		rect.set_xy((y0, x0))
+		processed = self.dataset.write_file['data']['processed']
+		vectors = processed['vectors']
+		scalars = processed['scalars']
+		rect_info_exists = ('rect_xy' in vectors.keys() and 'width' in scalars.keys() and 'height' in scalars.keys())
 
-		self.ui.imageview_mpl.zoom_rect(border=border)
+		# ======================================
+		# Try to load rect info from file
+		# ======================================
+		use_loaded_rect=False
+		if rect_info_exists:
+			rect_xy = mt.E200.E200_api_getdat(vectors['rect_xy'],uid).dat
+			width   = mt.E200.E200_api_getdat(scalars['width'],uid).dat
+			height  = mt.E200.E200_api_getdat(scalars['height'],uid).dat
+			# One element each for rect_xy, width, height
+			if np.size(rect_xy) == 2 and np.size(width) == 1 and np.size(height) == 1:
+				print 'loading rect from file'
+				rect_xy = rect_xy[0]
+				width   = width[0]
+				height  = height[0]
+
+				print 'Uid loaded is {:0.0f}'.format(uid)
+				print 'Image number is {}'.format(self.imgnum)
+
+				use_loaded_rect=True
+
+			# if self.camname=='CMOS_FAR':
+			# 	border = None
+			# 	border_px = 250
+			# elif self.camname=='ELANEX':
+			# 	border = None
+			# 	border_px = 50
+			border = np.array([width,height])*0.1
+			border_px = None
+
+		# ======================================
+		# If unsuccessful, calculate rect info
+		# ======================================
+		if not use_loaded_rect:
+			print 'replacing rect'
+			if self.camname=='CMOS_FAR':
+				x0     = 275
+				x1     = 325
+				y0     = 1870
+				y1     = 1900
+				border = None
+				border_px = np.array([250,250])
+			elif self.camname=='ELANEX':
+				print 'Elanex'
+				x0     = 0 + 50
+				x1     = self.ui.imageview_mpl.image.shape[0] - 50
+				y0     = 0 + 50
+				y1     = self.ui.imageview_mpl.image.shape[1] - 50
+				border = None
+				border_px = np.array([50,50])
+			rect_xy = np.array([y0, x0])
+			width   = (y1 - y0)
+			height  = (x1 - x0)
+
+			if not 'rect_xy' in vectors.keys():
+				vectors.create_group('rect_xy')
+			if not 'width' in scalars.keys():
+				scalars.create_group('width')
+			if not 'height' in scalars.keys():
+				scalars.create_group('height')
+			mt.E200.E200_api_updateUID(vectors['rect_xy'],rect_xy,uid)
+			mt.E200.E200_api_updateUID(scalars['width'],width,uid)
+			mt.E200.E200_api_updateUID(scalars['height'],height,uid)
+			processed.file.flush()
+
+		# ======================================
+		# Set and draw rect
+		# ======================================
+		if self.verbose:
+			print rect_xy
+			print width
+			print height
+		rect.set_xy(rect_xy)
+		rect.set_width(width)
+		rect.set_height(height)
+
+		self.ui.imageview_mpl.zoom_rect(border=border,border_px=border_px)
 		self.ui.imagenum_valid_checkbox.setChecked(self.validimg[self.imgnum-1])
-		# self.run_sim()
+		self.ui.imageview_mpl.ax.figure.canvas.draw()
 
 	def camname_combobox_changed(self):
 		self.camname=self.ui.camname_combobox.currentText()
@@ -156,7 +252,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# Load images
 		imgstr=self.data['raw']['images'][str(self.camname)]
 		uids = imgstr['UID']
-		return mt.E200.E200_load_images(imgstr,self.infile,uids)
+		return mt.E200.E200_load_images(imgstr,uids)
 
 	def loadfile(self,camname=None,imgnum=1):
 		if camname==None:
@@ -164,17 +260,12 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.camname = camname
 	
 		self.imgnum = imgnum
-		# self.data   = self.infile['data']
 
 		self.allimgs = self.loadimages()
-		# self.oimg   = self.oimg[0]
 
 		# Set cameras per infile
 		self.set_camnames(self.infile,camname=self.camname)
 
-		# self.ui.imagenum_slider.setValue(self.imgnum)
-		# self.setup_imagenum_slider(self.infile,imgnum)
-		# camname = str(self.ui.camname_combobox.currentText())
 		numimgs = self.infile['data']['raw']['images'][camname]['UID'].shape[0]
 		print 'Number of images is {}'.format(numimgs)
 		self.ui.imagenum_slider.setMinimum(1)
@@ -213,6 +304,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 		ax.figure.canvas.draw()
 
 	def run_sim(self):
+		# =====================================
+		# Run the sim
+		# =====================================
 		print 'Running sim!'
 		self.ui.fitview_mpl.ax.clear()
 		self.ui.roiview_mpl.ax.clear()
@@ -226,19 +320,54 @@ class ButterflyGUI(QtGui.QMainWindow):
 				plotaxes=self.ui.fitview_mpl.ax,
 				rect=self.ui.imageview_mpl.rect)
 
+		# =====================================
+		# Redraw results boxes
+		# =====================================
 		self.ui.fitview_mpl.ax.figure.canvas.draw()
 		self.ui.roiview_mpl.ax.figure.canvas.draw()
 
 		self.ui.gaussfit_slider.setMinimum(1)
 		self.ui.gaussfit_slider.setMaximum(self.out.gaussfits.shape[0])
 		self.ui.gaussfit_slider.valueChanged.connect(self.gaussfit_update)
-
 		self.gaussfit_update(1)
 
+		# =====================================
+		# Save results locally
+		# =====================================
 		ind = self.ui.imagenum_slider.value-1
 		self.fitresults[ind] = self.out
 
+		# =====================================
+		# Update emittance plot
+		# =====================================
 		self.updateEmitPlot()
+
+		# =====================================
+		# Extract results to save from classes
+		# =====================================
+		scanfit = self.out.scanfit
+		emit_n = scanfit.fitresults.emitn
+		betastar = scanfit.fitresults.Beam.betastar
+		sstar = scanfit.fitresults.Beam.sstar
+
+		# =====================================
+		# Write results to file
+		# =====================================
+		ind = self.ui.imagenum_slider.value-1
+		uid = self.allimgs.uid[ind]
+		uid = uid[0]
+
+		processed = self.dataset.write_file['data']['processed']
+		# vectors = processed['vectors']
+		scalars = processed['scalars']
+		mt.create_group(scalars,'ss_emit_n')
+		mt.create_group(scalars,'ss_betastar')
+		mt.create_group(scalars,'ss_sstar')
+		mt.E200.E200_api_updateUID(scalars['ss_emit_n'],emit_n,uid)
+		mt.E200.E200_api_updateUID(scalars['ss_betastar'],betastar,uid)
+		mt.E200.E200_api_updateUID(scalars['ss_sstar'],sstar,uid)
+
+		scalars.file.flush()
 
 	def updateEmitPlot(self):
 		validresults = self.fitresults[self.validimg]
@@ -247,19 +376,12 @@ class ButterflyGUI(QtGui.QMainWindow):
 		print validresults.shape
 		print type(validresults)
 		for i,val in enumerate(validresults):
-			# print 'Here'
-			# print val
 			self.emit[i] = val.scanfit.fitresults.emitn
-			# print self.emit[i]
 
 		ax=self.ui.dataset_mpl.ax
 		ax.clear()
-		# print self.emit
 		ax.plot(self.emit)
 		ax.figure.canvas.draw()
-
-	# def slider_change(self,val,name):
-	#         getattr(self.ui,name).setText(str(val))
 
 	def updateResults(self,val):
 		ind = self.ui.imagenum_slider.value-1

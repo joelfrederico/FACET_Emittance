@@ -11,13 +11,13 @@ import matplotlib as mpl
 mpl.rcParams['image.aspect'] = 'auto'
 import numpy as np
 
-def runGUI(filename,camname,imgnum):
-	dataset=mt.E200.Data(filename)
+def runGUI(filename,camname,imgnum,verbose=False):
+	data=mt.E200.E200_load_data(filename)
 	
 	# Generate or retrieve qt app
 	app = mt.qt.get_app()
 
-	window = ButterflyGUI(analyze_matlab,dataset,camname,imgnum)
+	window = ButterflyGUI(analyze_matlab,data,camname,imgnum,verbose=verbose)
 	# img = np.random.randn(10,10)
 	# window = ButterflyGUI(analyze_matlab,image=img)
 	# window.ui.imageview_mpl.img.image=img
@@ -37,4 +37,4 @@ if __name__ == '__main__':
 
 	arg=parser.parse_args()
 
-	runGUI(arg.file,arg.camera,arg.imgnum)
+	runGUI(arg.file,arg.camera,arg.imgnum,verbose=arg.verbose)
