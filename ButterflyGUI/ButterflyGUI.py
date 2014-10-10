@@ -62,7 +62,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.camname_combobox.currentIndexChanged.connect(self.camname_combobox_changed)
 
 		# ======================================
-		# Connect camname_combobox
+		# Connect imagenum_slider
 		# ======================================
 		# Disable tracking
 		self.ui.imagenum_slider.setTracking(False)
@@ -128,7 +128,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 			if e.message == 'Unable to create file (File exists)':
 				f = h5.File('data-{}.hdf5'.format(time.strftime('%Y-%m-%d-%H:%M:%S')),'w-')
 
-		mt.picklejar('mydata.pkl',fitresults=self.fitresults,valid=self.validimg)
+		mt.picklejar('mydata.pkl',fitresults=self.fitresults,valid=self.validimg,rect=self.rect)
 
 	def imagenum_slider_changed(self,val=None):
 		# ======================================
@@ -310,6 +310,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		print 'Running sim!'
 		self.ui.fitview_mpl.ax.clear()
 		self.ui.roiview_mpl.ax.clear()
+		self.rect = self.ui.imageview_mpl.rect
 		self.out = self.analyzefcn(f=self.infile,
 				data=self.data,
 				camname=self.camname,
@@ -318,7 +319,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 				verbose = False,
 				roiaxes=self.ui.roiview_mpl.ax,
 				plotaxes=self.ui.fitview_mpl.ax,
-				rect=self.ui.imageview_mpl.rect)
+				rect=self.rect)
 
 		# =====================================
 		# Redraw results boxes
@@ -326,6 +327,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.fitview_mpl.ax.figure.canvas.draw()
 		self.ui.roiview_mpl.ax.figure.canvas.draw()
 
+		# =====================================
+		# Update gaussfit slider
+		# =====================================
 		self.ui.gaussfit_slider.setMinimum(1)
 		self.ui.gaussfit_slider.setMaximum(self.out.gaussfits.shape[0])
 		self.ui.gaussfit_slider.valueChanged.connect(self.gaussfit_update)
@@ -343,31 +347,58 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.updateEmitPlot()
 
 		# =====================================
-		# Extract results to save from classes
-		# =====================================
-		scanfit = self.out.scanfit
-		emit_n = scanfit.fitresults.emitn
-		betastar = scanfit.fitresults.Beam.betastar
-		sstar = scanfit.fitresults.Beam.sstar
-
-		# =====================================
-		# Write results to file
+		# Get UID
 		# =====================================
 		ind = self.ui.imagenum_slider.value-1
 		uid = self.allimgs.uid[ind]
 		uid = uid[0]
 
+		# =====================================
+		# Extract results and save
+		# =====================================
+		# Save location
 		processed = self.dataset.write_file['data']['processed']
-		# vectors = processed['vectors']
+		vectors = processed['vectors']
 		scalars = processed['scalars']
-		mt.create_group(scalars,'ss_emit_n')
-		mt.create_group(scalars,'ss_betastar')
-		mt.create_group(scalars,'ss_sstar')
-		mt.E200.E200_api_updateUID(scalars['ss_emit_n'],emit_n,uid)
-		mt.E200.E200_api_updateUID(scalars['ss_betastar'],betastar,uid)
-		mt.E200.E200_api_updateUID(scalars['ss_sstar'],sstar,uid)
+		arrays = processed['arrays']
 
-		scalars.file.flush()
+		# Results
+		out        = self.out
+		scanfit    = out.scanfit
+		fitresults = scanfit.fitresults
+
+		rect_arr = np.array([self.rect.get_x(),self.rect.get_y(),self.rect.get_height(),self.rect.get_width()])
+		print rect_arr
+
+		result_array = [
+			[scalars , 'ss_emit_n'           , fitresults.emitn         ] ,
+			[scalars , 'ss_betastar'         , fitresults.Beam.betastar ] ,
+			[scalars , 'ss_sstar'            , fitresults.Beam.sstar    ] ,
+			[vectors , 'ss_energy_axis'      , out.eaxis                ] ,
+			[vectors , 'ss_variance'         , out.variance             ] ,
+			[vectors , 'ss_LLS_beta'         , fitresults.beta          ] ,
+			[arrays  , 'ss_LLS_X_unweighted' , fitresults.X_unweighted  ] ,
+			[vectors , 'ss_LLS_y_error'      , fitresults.y_error       ] ,
+			[vectors , 'ss_rect'             , rect_arr                 ] ,
+			[arrays  , 'ss_image'            , self.oimg                ]
+			]
+
+		# Write results to file
+		for pair in result_array:
+			if self.verbose:
+				print 'Writing to group {}...'.format(pair[1])
+			try:
+				self._write_result(pair[0],pair[1],uid,pair[2])
+			except:
+				print 'Error on saving group {} with value:'.format(pair[1])
+				print pair[2]
+				raise
+
+	def _write_result(self,group,name,uid,value):
+		mt.create_group(group,name)
+		mt.E200.E200_api_updateUID(group[name],value,uid)
+
+		group.file.flush()
 
 	def updateEmitPlot(self):
 		validresults = self.fitresults[self.validimg]

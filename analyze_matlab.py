@@ -17,7 +17,7 @@ class AnalysisResults(object):
 			oimg,yoimg,oimgeaxis,
 			xstart,xstop,
 			ystart,ystop,
-			res,x_meter
+			res,x_meter,variance
 			):
 		self.img = img
 		self.yimg = yimg
@@ -34,6 +34,7 @@ class AnalysisResults(object):
 		self.ystop = ystop
 		self.res = res
 		self.x_meter = x_meter
+		self.variance = variance
 
 def analyze_matlab(f=None,
 		data=None,
@@ -246,19 +247,21 @@ def analyze_matlab(f=None,
 			)
 	plt.show()
 
-	out = AnalysisResults(gaussresults,scanresults,
-			img       = img,
-			yimg      = yimg,
-			imgeaxis  = imgeaxis,
-			oimg      = oimg,
-			yoimg     = yoimg,
-			oimgeaxis = oimgeaxis,
-			eaxis     = eaxis,
-			xstart    = xstart,
-			xstop     = xstop,
-			ystart    = ystart,
-			ystop     = ystop,
-			res       = res,
+	out = AnalysisResults(gaussresults,
+			scanfit   = scanresults ,
+			img       = img         ,
+			yimg      = yimg        ,
+			imgeaxis  = imgeaxis    ,
+			oimg      = oimg        ,
+			yoimg     = yoimg       ,
+			oimgeaxis = oimgeaxis   ,
+			eaxis     = eaxis       ,
+			variance  = variance    ,
+			xstart    = xstart      ,
+			xstop     = xstop       ,
+			ystart    = ystart      ,
+			ystop     = ystop       ,
+			res       = res         ,
 			x_meter   = x_meter
 			)
 	
