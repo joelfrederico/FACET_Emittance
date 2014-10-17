@@ -9,29 +9,21 @@ import ButterflyEmittancePython as bt
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-try:
-	data.close()
-except:
-	pass
-
-sets      = ['20140625','13438']
-setdate   = sets[0]
-setnumber = sets[1]
-
-loadfile = 'nas/nas-li20-pm00/E200/2014/{}/E200_{}'.format(setdate,setnumber)
-data = mt.E200.E200_load_data(loadfile)
-
-wf        = data.write_file
-processed = wf['data']['processed']
-scalars   = processed['scalars']
-vectors   = processed['vectors']
-arrays    = processed['arrays']
+wf                  = h5.File('data.hdf5','w')
+wf.attrs['origin']  = 'python-h5py'
+wf.attrs['version'] = h5.version.version
+data                = wf.create_group('data')
+processed           = data.create_group('processed')
+scalars             = processed.create_group('scalars')
+vectors             = processed.create_group('vectors')
+arrays              = processed.create_group('arrays')
 
 # ======================================
 # Scalar test
 # ======================================
 # Set up new things for scalar
-verbose = True
+# verbose = True
+verbose = False
 if verbose:
 	print r'''
 =================================
@@ -68,6 +60,7 @@ if verbose:
 # ======================================
 # Set up new things for vector
 verbose = True
+# verbose = False
 if verbose:
 	print r'''
 =================================
@@ -76,7 +69,7 @@ Vector test
 test_vector = mt.E200.E200_create_data(vectors,'test_vector',datatype='array')
 test_uids   = np.array([6,7,8,1,4,5])
 base = np.array([1,10,100],dtype=np.float64)
-test_values = np.array(np.outer(test_uids,base),dtype=np.float32)
+test_values = np.array(np.outer(test_uids,base),dtype=np.float64)
 
 # Add vectors
 mt.E200.E200_api_updateUID(test_vector,test_uids,test_values,verbose=verbose)
@@ -89,8 +82,8 @@ if verbose:
 
 # Change vectors
 test_uids   = np.array([9,6])
-base = np.array([-1,-10,-100],dtype=np.float64)
-test_values = np.array(np.outer(test_uids,base),dtype=np.float32)
+base = np.array([1,10],dtype=np.float64)*-1
+test_values = np.array(np.outer(test_uids,base),dtype=np.float64)
 
 # Update vectors
 mt.E200.E200_api_updateUID(test_vector,test_uids,test_values,verbose=verbose)
@@ -101,12 +94,21 @@ if verbose:
 	for val in test_vector['dat'].value:
 		print test_vector.file[val].value
 
+# Show
+wanted_uids = np.array([9,7,4])
+returned_dat = mt.E200.E200_api_getdat(test_vector,uids=wanted_uids,verbose=True)
+if verbose:
+	print '\tReturned info:'
+	print returned_dat.UID
+	print returned_dat.dat
+
 
 # ======================================
 # Array test
 # ======================================
 # Set up new things for array
-verbose = True
+# verbose = True
+verbose = False
 if verbose:
 	print r'''
 =================================
