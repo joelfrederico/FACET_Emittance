@@ -8,140 +8,50 @@ import numpy as np
 import ButterflyEmittancePython as bt
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from E200_get_data_cam import E200_get_data_cam
 
-wf                  = h5.File('data.hdf5','w')
-wf.attrs['origin']  = 'python-h5py'
-wf.attrs['version'] = h5.version.version
-data                = wf.create_group('data')
-processed           = data.create_group('processed')
-scalars             = processed.create_group('scalars')
-vectors             = processed.create_group('vectors')
-arrays              = processed.create_group('arrays')
+sets      = ['20140625','13438']
+setdate   = sets[0]
+setnumber = sets[1]
 
-# ======================================
-# Scalar test
-# ======================================
-# Set up new things for scalar
-# verbose = True
-verbose = False
-if verbose:
-	print r'''
-=================================
-Scalar test
-================================='''
-test_scalar = mt.E200.E200_create_data(scalars,'test_scalar',datatype='array')
-test_uids   = np.array([6,7,8,1,4,5])
-test_values = np.array(test_uids*1.1,dtype=np.float64)
+loadfile = 'nas/nas-li20-pm00/E200/2014/{}/E200_{}'.format(setdate,setnumber)
+data = mt.E200.E200_load_data(loadfile)
 
-# Add scalars
-mt.E200.E200_api_updateUID(test_scalar,test_uids,test_values,verbose=verbose)
+wf           = data.write_file
+processed_wf = wf['data']['processed']
+scalars_wf   = processed_wf['scalars']
+vectors_wf   = processed_wf['vectors']
+arrays_wf    = processed_wf['arrays']
 
-# Show scalars
-if verbose:
-	print test_scalar['UID'].value
-	for val in test_scalar['dat'].value:
-		print test_scalar.file[val].value
+rf         = data.read_file
+raw_rf     = rf['data']['raw']
+scalars_rf = raw_rf['scalars']
+vectors_rf = raw_rf['vectors']
+arrays_rf  = raw_rf['arrays']
 
-# Change scalars
-test_uids   = np.array([9,6])
-test_values = np.array(test_uids*-1.1,dtype=np.float64)
+# results = E200_get_data_cam(scalars)
+# print results
 
-# Update scalars
-mt.E200.E200_api_updateUID(test_scalar,test_uids,test_values,verbose=verbose)
+camname = 'ELANEX'
+head_str = 'ss_{}_'.format(camname)
+energy_axis_str = vectors_wf['{}energy_axis'.format(head_str)]
+uids            = energy_axis_str['UID'].value
+uid = uids[0]
 
-# Show scalars
-if verbose:
-	print test_scalar['UID'].value
-	for val in test_scalar['dat'].value:
-		print test_scalar.file[val].value
+print type(uid)
 
-# ======================================
-# Vector test
-# ======================================
-# Set up new things for vector
-verbose = True
-# verbose = False
-if verbose:
-	print r'''
-=================================
-Vector test
-================================='''
-test_vector = mt.E200.E200_create_data(vectors,'test_vector',datatype='array')
-test_uids   = np.array([6,7,8,1,4,5])
-base = np.array([1,10,100],dtype=np.float64)
-test_values = np.array(np.outer(test_uids,base),dtype=np.float64)
+elanex_str = raw_rf['images']['ELANEX']
+# uid        = elanex_str['UID'][0][0]
+elanex     = mt.E200.E200_api_getdat(elanex_str,uid)
 
-# Add vectors
-mt.E200.E200_api_updateUID(test_vector,test_uids,test_values,verbose=verbose)
+quadval_str = data.read_file['data']['raw']['scalars']['step_value']
 
-# Show vectors
-if verbose:
-	print test_vector['UID'].value
-	for val in test_vector['dat'].value:
-		print test_vector.file[val].value
-
-# Change vectors
-test_uids   = np.array([9,6])
-base = np.array([1,10],dtype=np.float64)*-1
-test_values = np.array(np.outer(test_uids,base),dtype=np.float64)
-
-# Update vectors
-mt.E200.E200_api_updateUID(test_vector,test_uids,test_values,verbose=verbose)
-
-# Show vectors
-if verbose:
-	print test_vector['UID'].value
-	for val in test_vector['dat'].value:
-		print test_vector.file[val].value
-
-# Show
-wanted_uids = np.array([9,7,4])
-returned_dat = mt.E200.E200_api_getdat(test_vector,uids=wanted_uids,verbose=True)
-if verbose:
-	print '\tReturned info:'
-	print returned_dat.UID
-	print returned_dat.dat
+for val in quadval_str['UID'].value:
+	if val == uid:
+		print 'here'
+	else:
+		pass
+		print 'nothere'
 
 
-# ======================================
-# Array test
-# ======================================
-# Set up new things for array
-# verbose = True
-verbose = False
-if verbose:
-	print r'''
-=================================
-Array test
-================================='''
-test_array = mt.E200.E200_create_data(arrays,'test_array',datatype='array')
-test_uids   = np.array([6,7,8,1,4,5])
-base_array = np.array([[1,10],[100,1000]])
-test_values = np.empty(test_uids.shape,dtype=np.object)
-for i,val in enumerate(test_uids):
-	test_values[i] = base_array*val
-
-# Add arrays
-mt.E200.E200_api_updateUID(test_array,test_uids,test_values,verbose=verbose)
-
-# Show arrays
-if verbose:
-	print test_array['UID'].value
-	for val in test_array['dat'].value:
-		print test_array.file[val].value
-
-# Change arrays
-test_uids   = np.array([9,6])
-base_array = np.array([[1,10,100],[-100,-10,-1]])
-test_values = np.empty(test_uids.shape,dtype=np.object)
-for i,val in enumerate(test_uids):
-	test_values[i] = base_array*val
-
-# Update arrays
-mt.E200.E200_api_updateUID(test_array,test_uids,test_values,verbose=verbose)
-
-# Show arrays
-if verbose:
-	print test_array['UID'].value
-	for val in test_array['dat'].value:
-		print test_array.file[val].value
+# quadval     = mt.E200.E200_api_getdat(quadval_str,uid).dat[0]

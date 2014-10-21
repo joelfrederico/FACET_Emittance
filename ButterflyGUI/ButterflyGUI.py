@@ -6,19 +6,23 @@ from PyQt4 import QtGui,QtCore
 import mainwindow_auto as mw
 import numpy as np
 import h5py as h5
+import warnings
+from mytools import Indent
 
 class ButterflyGUI(QtGui.QMainWindow):
 	def __init__(self,analyzefcn,dataset=None,camname=None,imgnum=None,verbose=False):
 		# ======================================
 		# Save default info
 		# ======================================
-		self.verbose=verbose
+		self.verbose    = verbose
+		self.indent     = Indent.Indent()
+
 		self.analyzefcn = analyzefcn
-		self.dataset = dataset
-		self.data=dataset.read_file['data']
-		self.infile=dataset.read_file
-		self.camname=camname
-		self.imgnum=imgnum
+		self.dataset    = dataset
+		self.data       = dataset.read_file['data']
+		self.infile     = dataset.read_file
+		self.camname    = camname
+		self.imgnum     = imgnum
 
 		# ======================================
 		# Initialize class
@@ -39,18 +43,13 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		# Load file passed in
 		# ======================================
-		# if self.infile != None:
-			# self.camname = infile['camname']
-			# self.camname = mt.derefstr(self.camname)
-			# self.imgnum = infile['imgnum'][0,0]
-			# self.loadfile(camname=self.camname,imgnum=self.imgnum)
-		if camname==None:
+		if camname is None:
 			camname=self.data['raw']['images'].keys()
 			camname=camname[0]
-		if imgnum==None:
+		if imgnum is None:
 			imgnum=1
-		print camname
-		print imgnum
+		if verbose:
+			print 'Camera name is: {}, image number is: {}'.format(camname,imgnum)
 		self.loadfile(camname,imgnum)
 
 		self.ui.imageview_mpl.setSliderValue(3600)
@@ -92,6 +91,13 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# self.ui.plottype.addItems(['emit','emitn'])
 		self.ui.plottype.currentIndexChanged.connect(self.plotdataset)
 
+	def vprint(self,*args,**kwargs):
+		if self.verbose:
+			self.iprint(*args,**kwargs)
+
+	def iprint(self,*args,**kwargs):
+		Indent.iprint(self.indent,*args,**kwargs)
+
 	def saverect(self,rect):
 		ind = self.ui.imagenum_slider.value-1
 		uid = self.allimgs.uid[ind]
@@ -101,9 +107,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 		vectors = processed['vectors']
 		scalars = processed['scalars']
 		rect_xy = np.array(rect.get_xy())
-		mt.E200.E200_api_updateUID(vectors['rect_xy'],rect_xy,uid)
-		mt.E200.E200_api_updateUID(scalars['width'],rect.get_width(),uid)
-		mt.E200.E200_api_updateUID(scalars['height'],rect.get_height(),uid)
+		mt.E200.E200_api_updateUID(vectors['ss_{}_rect_xy'.format(self.camname)],UID=uid,value=rect_xy)
+		mt.E200.E200_api_updateUID(scalars['ss_{}_width'.format(self.camname)],UID=uid,value=rect.get_width())
+		mt.E200.E200_api_updateUID(scalars['ss_{}_height'.format(self.camname)],UID=uid,value=rect.get_height())
 		self.data.file.flush()
 		print 'Saving to index {}, uid {:0.0f}'.format(ind,uid)
 		print 'Image number is {}'.format(self.imgnum)
@@ -113,7 +119,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		print 'saved'
 
 	def plotdataset(self,ind=None):
-		if ind==None:
+		if ind is None:
 			ind=self.ui.plottype.currentIndex()
 		selected_fits=self.fitresults[self.validimg]
 		x = np.vectorize(self.plotoptions[ind,1])
@@ -134,10 +140,10 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		# Set the new image number
 		# ======================================
-		if val!=None:
+		if val is not None:
 			self.imgnum=val
-		if self.verbose:
-			print 'Image number is {}'.format(self.imgnum)
+		self.vprint('Slider changed, image number is: {}'.format(self.imgnum))
+		self.indent.level +=1
 
 		# ======================================
 		# Open the right image for viewing
@@ -153,51 +159,48 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		uid = self.allimgs.uid[self.imgnum-1]
 		# Print all UIDs
-		if self.verbose:
-			for val in self.allimgs.uid:
-				print '{:0.0f}'.format(val[0])
 		uid = uid[0]
+		self.vprint('UID type is: {}'.format(type(uid)))
+		self.vprint('Opening UID: {:0.0f}'.format(uid))
 		rect = self.ui.imageview_mpl.rect
 		processed = self.dataset.write_file['data']['processed']
 		vectors = processed['vectors']
 		scalars = processed['scalars']
-		rect_info_exists = ('rect_xy' in vectors.keys() and 'width' in scalars.keys() and 'height' in scalars.keys())
+		rect_info_exists = ('ss_{}_rect_xy'.format(self.camname) in vectors.keys() and 'ss_{}_width'.format(self.camname) in scalars.keys() and 'ss_{}_height'.format(self.camname) in scalars.keys())
 
 		# ======================================
 		# Try to load rect info from file
 		# ======================================
 		use_loaded_rect=False
 		if rect_info_exists:
-			rect_xy = mt.E200.E200_api_getdat(vectors['rect_xy'],uid).dat
-			width   = mt.E200.E200_api_getdat(scalars['width'],uid).dat
-			height  = mt.E200.E200_api_getdat(scalars['height'],uid).dat
+			rect_xy = mt.E200.E200_api_getdat(vectors['ss_{}_rect_xy'.format(self.camname)],uid,verbose=self.verbose)
+			width   = mt.E200.E200_api_getdat(scalars['ss_{}_width'.format(self.camname)],uid,verbose=self.verbose)
+			height  = mt.E200.E200_api_getdat(scalars['ss_{}_height'.format(self.camname)],uid,verbose=self.verbose)
 			# One element each for rect_xy, width, height
-			if np.size(rect_xy) == 2 and np.size(width) == 1 and np.size(height) == 1:
-				print 'loading rect from file'
-				rect_xy = rect_xy[0]
-				width   = width[0]
-				height  = height[0]
+			if np.size(rect_xy.dat) == 2 and np.size(width.dat) == 1 and np.size(height.dat) == 1:
+				self.vprint('Loading rect from file...')
+				rect_xy = rect_xy.dat[0]
+				width   = width.dat[0]
+				height  = height.dat[0]
+				self.vprint('Width is: {}, Height is: {}'.format(width,height))
 
-				print 'Uid loaded is {:0.0f}'.format(uid)
-				print 'Image number is {}'.format(self.imgnum)
+				self.indent.level += 1
+				self.vprint('Uid loaded is {:0.0f}'.format(uid))
+				self.vprint('Image number is {}'.format(self.imgnum))
+
+				border = np.array([width,height])*0.1
+				border_px = None
 
 				use_loaded_rect=True
-
-			# if self.camname=='CMOS_FAR':
-			# 	border = None
-			# 	border_px = 250
-			# elif self.camname=='ELANEX':
-			# 	border = None
-			# 	border_px = 50
-			border = np.array([width,height])*0.1
-			border_px = None
 
 		# ======================================
 		# If unsuccessful, calculate rect info
 		# ======================================
 		if not use_loaded_rect:
-			print 'replacing rect'
+			self.vprint('Replacing rect...')
+			self.indent.level += 1
 			if self.camname=='CMOS_FAR':
+				self.vprint('Using CMOS_FAR default rect')
 				x0     = 275
 				x1     = 325
 				y0     = 1870
@@ -205,35 +208,37 @@ class ButterflyGUI(QtGui.QMainWindow):
 				border = None
 				border_px = np.array([250,250])
 			elif self.camname=='ELANEX':
-				print 'Elanex'
+				self.vprint('Using ELANEX default rect')
 				x0     = 0 + 50
 				x1     = self.ui.imageview_mpl.image.shape[0] - 50
 				y0     = 0 + 50
 				y1     = self.ui.imageview_mpl.image.shape[1] - 50
 				border = None
 				border_px = np.array([50,50])
+			self.indent.level -= 1
 			rect_xy = np.array([y0, x0])
 			width   = (y1 - y0)
 			height  = (x1 - x0)
 
-			if not 'rect_xy' in vectors.keys():
-				vectors.create_group('rect_xy')
-			if not 'width' in scalars.keys():
-				scalars.create_group('width')
-			if not 'height' in scalars.keys():
-				scalars.create_group('height')
-			mt.E200.E200_api_updateUID(vectors['rect_xy'],rect_xy,uid)
-			mt.E200.E200_api_updateUID(scalars['width'],width,uid)
-			mt.E200.E200_api_updateUID(scalars['height'],height,uid)
+			
+			mt.E200.E200_create_data(vectors,'ss_{}_rect_xy'.format(self.camname))
+			mt.E200.E200_create_data(scalars,'ss_{}_width'.format(self.camname))
+			mt.E200.E200_create_data(scalars,'ss_{}_height'.format(self.camname))
+
+			mt.E200.E200_api_updateUID(vectors['ss_{}_rect_xy'.format(self.camname)],UID=uid,value=rect_xy)
+			mt.E200.E200_api_updateUID(scalars['ss_{}_width'.format(self.camname)],UID=uid,value=width)
+			mt.E200.E200_api_updateUID(scalars['ss_{}_height'.format(self.camname)],UID=uid,value=height)
 			processed.file.flush()
 
 		# ======================================
 		# Set and draw rect
 		# ======================================
-		if self.verbose:
-			print rect_xy
-			print width
-			print height
+		self.indent.level += 1
+		self.vprint('Rect_xy of rect is {}'.format(rect_xy))
+		self.vprint('Width of rect is {}'.format(width))
+		self.vprint('Height of rect is {}'.format(height))
+		self.indent.level -= 1
+
 		rect.set_xy(rect_xy)
 		rect.set_width(width)
 		rect.set_height(height)
@@ -242,32 +247,61 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.imagenum_valid_checkbox.setChecked(self.validimg[self.imgnum-1])
 		self.ui.imageview_mpl.ax.figure.canvas.draw()
 
+		self.indent.level -=1
+		self.vprint('Finished updating after slider changed')
+
 	def camname_combobox_changed(self):
 		self.camname=self.ui.camname_combobox.currentText()
 		self.allimgs=self.loadimages()
 		self.imagenum_slider_changed()
-		print 'Tracking is {}'.format(self.ui.imagenum_slider._tracking)
+		# print 'Tracking is {}'.format(self.ui.imagenum_slider._tracking)
 
 	def loadimages(self):
-		# Load images
+		self.iprint('Loading images...')
+		self.indent.level += 1
+
 		imgstr=self.data['raw']['images'][str(self.camname)]
+
 		uids = imgstr['UID']
-		return mt.E200.E200_load_images(imgstr,uids)
+		self.vprint('Number of images requested: {}'.format(uids.shape[0]))
+
+		out = mt.E200.E200_load_images(imgstr,uids)
+
+		self.indent.level -= 1
+		self.iprint('Finished loading images')
+		return out
 
 	def loadfile(self,camname=None,imgnum=1):
-		if camname==None:
+		self.iprint('Loading file...')
+		self.indent.level += 1
+		# ======================================
+		# Get and save camname if necessary
+		# ======================================
+		if camname is None:
 			camname=self.ui.camname_combobox.currentText()
 		self.camname = camname
 	
+		# ======================================
+		# Save imgnum
+		# ======================================
 		self.imgnum = imgnum
 
+		# ======================================
+		# Load all images and save to array
+		# ======================================
 		self.allimgs = self.loadimages()
 
-		# Set cameras per infile
+		# ======================================
+		# Set the camera names in the GUI
+		# ======================================
 		self.set_camnames(self.infile,camname=self.camname)
 
+		# ======================================
+		# Get the number of images and set gui
+		# sliders
+		# ======================================
 		numimgs = self.infile['data']['raw']['images'][camname]['UID'].shape[0]
-		print 'Number of images is {}'.format(numimgs)
+
 		self.ui.imagenum_slider.setMinimum(1)
 		self.ui.imagenum_slider.setMaximum(numimgs)
 		self.ui.imagenum_slider.setValue(imgnum)
@@ -279,7 +313,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.fitresults = np.empty(numimgs,dtype=object)
 
 		self.imagenum_slider_changed()
-		print 'Finished loading'
+
+		self.indent.level -= 1
+		self.iprint('Finished loading file')
 
 	def set_camnames(self,infile,camname=None):
 		camnames = np.array(infile['data']['raw']['images'].keys())
@@ -287,7 +323,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.camname_combobox.addItems(camnames)
 		self.camnames = camnames
 
-		if camname!=None:
+		if camname is not None:
 			# camname=str(camname)
 			camname_index = np.where(self.camnames==camname)
 			self.ui.camname_combobox.setCurrentIndex(camname_index[0])
@@ -371,22 +407,21 @@ class ButterflyGUI(QtGui.QMainWindow):
 		print rect_arr
 
 		result_array = [
-			[scalars , 'ss_emit_n'           , fitresults.emitn         ] ,
-			[scalars , 'ss_betastar'         , fitresults.Beam.betastar ] ,
-			[scalars , 'ss_sstar'            , fitresults.Beam.sstar    ] ,
-			[vectors , 'ss_energy_axis'      , out.eaxis                ] ,
-			[vectors , 'ss_variance'         , out.variance             ] ,
-			[vectors , 'ss_LLS_beta'         , fitresults.beta          ] ,
-			[arrays  , 'ss_LLS_X_unweighted' , fitresults.X_unweighted  ] ,
-			[vectors , 'ss_LLS_y_error'      , fitresults.y_error       ] ,
-			[vectors , 'ss_rect'             , rect_arr                 ] ,
-			[arrays  , 'ss_image'            , self.oimg                ]
+			[scalars , 'ss_{}_emit_n'.format(self.camname)           , fitresults.emitn         ] ,
+			[scalars , 'ss_{}_betastar'.format(self.camname)         , fitresults.Beam.betastar ] ,
+			[scalars , 'ss_{}_sstar'.format(self.camname)            , fitresults.Beam.sstar    ] ,
+			[vectors , 'ss_{}_energy_axis'.format(self.camname)      , out.eaxis                ] ,
+			[vectors , 'ss_{}_variance'.format(self.camname)         , out.variance             ] ,
+			[vectors , 'ss_{}_LLS_beta'.format(self.camname)         , fitresults.beta          ] ,
+			[arrays  , 'ss_{}_LLS_X_unweighted'.format(self.camname) , fitresults.X_unweighted  ] ,
+			[vectors , 'ss_{}_LLS_y_error'.format(self.camname)      , fitresults.y_error       ] ,
+			[vectors , 'ss_{}_rect'.format(self.camname)             , rect_arr                 ] ,
+			[arrays  , 'ss_{}_image'.format(self.camname)            , self.oimg                ]
 			]
 
 		# Write results to file
 		for pair in result_array:
-			if self.verbose:
-				print 'Writing to group {}...'.format(pair[1])
+			self.vprint('Writing to group {}...'.format(pair[1]))
 			try:
 				self._write_result(pair[0],pair[1],uid,pair[2])
 			except:
@@ -394,9 +429,11 @@ class ButterflyGUI(QtGui.QMainWindow):
 				print pair[2]
 				raise
 
+		self.vprint('Finished writing')
+
 	def _write_result(self,group,name,uid,value):
-		mt.create_group(group,name)
-		mt.E200.E200_api_updateUID(group[name],value,uid)
+		mt.E200.E200_create_data(group,name)
+		mt.E200.E200_api_updateUID(group[name],UID=uid,value=value)
 
 		group.file.flush()
 
