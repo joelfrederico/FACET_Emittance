@@ -143,11 +143,11 @@ for pair in sets:
 #  Date                 & Dataset & UID && Pinch Energy & Normalized Emittance & Beta* [m] & S* [m] \\
 #                       &         &     && [GeV]        & [mm-mrad]            &           & \\
 # \midrule'''
-			env_curly=r'''lll'''
+			env_curly=r'''llll'''
 			table_begin = r'''
 \toprule
-\multicolumn{3}{c}{Dataset Info} \\
-\cmidrule(){1-3}
+\multicolumn{4}{c}{Dataset Info} \\
+\cmidrule(){1-4}
  Date                 & Dataset & UID & Quad Imaging Offset [GeV]\\
 \midrule'''
 			table_end= r'''

@@ -1,53 +1,20 @@
 #!/usr/bin/env python
+import logging
+logger=logging.getLogger(__name__)
 
-import argparse
-import numpy as np
-import scipy.io as sio
 import ButterflyEmittancePython as bt
-import mytools.slactrac as sltr
-import matplotlib.pyplot as plt
-import mytools as mt
+import argparse
 import copy
 import h5py as h5
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import mytools as mt
+import numpy as np
+import scipy.io as sio
+import slactrac as sltr
 
 class AnalysisResults(mt.classes.Keywords):
 	pass
-	# def __init__(self,
-	#                 eaxis,
-	#                 gaussfits,
-	#                 img,
-	#                 imgeaxis,
-	#                 oimg,
-	#                 oimgeaxis,
-	#                 res,
-	#                 scanfit,
-	#                 variance,
-	#                 x_meter,
-	#                 xstart,
-	#                 xstop,
-	#                 yimg,
-	#                 yoimg,
-	#                 ystart,
-	#                 ystop
-	#                 ):
-
-	#         self.eaxis     = eaxis
-	#         self.gaussfits = gaussfits
-	#         self.img       = img
-	#         self.imgeaxis  = imgeaxis
-	#         self.oimg      = oimg
-	#         self.oimgeaxis = oimgeaxis
-	#         self.yimg      = yimg
-	#         self.yoimg     = yoimg
-	#         self.scanfit   = scanfit
-	#         self.xstart    = xstart
-	#         self.xstop     = xstop
-	#         self.ystart    = ystart
-	#         self.ystop     = ystop
-	#         self.res       = res
-	#         self.x_meter   = x_meter
-	#         self.variance  = variance
 
 def analyze_matlab(
 		f        = None,
@@ -60,10 +27,8 @@ def analyze_matlab(
 		roiaxes  = None,
 		plotaxes = None,
 		verbose  = True,
-		indent   = None):
-
-	if indent is None:
-		indent=mt.Indent.Indent()
+		uid      = None
+		):
 
 	plt.close()
 	
@@ -87,6 +52,17 @@ def analyze_matlab(
 	imgstr = data['raw']['images'][str(camname)]
 	res    = imgstr['RESOLUTION'][0,0]
 	res    = res*1.0e-6
+
+	# ======================================
+	# Quadrupole set point
+	# ======================================
+	raw_rf     = data['raw']
+	scalars_rf = raw_rf['scalars']
+	setQS_str  = scalars_rf['step_value']
+	setQS_dat  = mt.E200.E200_api_getdat(setQS_str,uid).dat[0]
+	setQS = mt.hardcode.setQS(setQS_dat)
+	logger.error('setQS_dat is: {}'.format(setQS_dat))
+	logger.error('setQS_dat type is: {}'.format(type(setQS_dat)))
 	
 	# ======================================
 	# Bend magnet strength
@@ -177,6 +153,10 @@ def analyze_matlab(
 		ymotor=mt.derefdataset(ymotor,f)
 		ymotor=ymotor[0]*1e-3
 		# print 'Ymotor is {}'.format(ymotor)
+		logger.error('Original ymotor is: {}'.format(ymotor))
+		
+		ymotor = 40 - 55*setQS/(setQS+20.35)
+		logger.error('Reconstructed ymotor is: {ymotor}'.format(ymotor=ymotor))
 	else:
 		ymotor=None
 	eaxis=mt.E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
@@ -197,13 +177,35 @@ def analyze_matlab(
 			alpha = 0,
 			emit = emitx
 			)
+
+	# ======================================
+	# Quadrupole values
+	# ======================================
+
+
+	logger.error('QS1_BDES is: {}'.format(QS1_BDES))
+	logger.error('QS2_BDES is: {}'.format(QS2_BDES))
+
+	QS1_K1 = sltr.BDES2K(bdes=QS1_BDES,quad_length=1,energy=setQS+20.35)
+	QS2_K1 = sltr.BDES2K(bdes=QS2_BDES,quad_length=1,energy=setQS+20.35)
+
+	logger.error('QS1_K1 is: {}'.format(QS1_K1))
+	logger.error('QS2_K1 is: {}'.format(QS2_K1))
+
+	# ======================================
+	# Elanex motor positions
+	# ======================================
 	
 	# ======================================
 	# Create beamlines
 	# ======================================
 	# beamline=bt.beamlines.IP_to_cherfar(twiss_x=twiss,twiss_y=twiss,gamma=gamma)
+	beamline=bt.beamlines.IP_to_lanex(
+			beam_x=twiss,beam_y=twiss,
+			QS1_K1 = QS1_K1,
+			QS2_K1 = QS2_K1
+			)
 
-	beamline=bt.beamlines.IP_to_lanex(beam_x=twiss,beam_y=twiss)
 	beamline_array = np.array([])
 	for i,value in enumerate(eaxis):
 		# beamline.gamma = value/5.109989e-4

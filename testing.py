@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import mytools as mt
+import E200
 import mytools.qt as myqt
 from PyQt4 import QtGui,QtCore
 import h5py as h5
@@ -15,7 +16,7 @@ setdate   = sets[0]
 setnumber = sets[1]
 
 loadfile = 'nas/nas-li20-pm00/E200/2014/{}/E200_{}'.format(setdate,setnumber)
-data = mt.E200.E200_load_data(loadfile)
+data     = E200.E200_load_data(loadfile)
 
 wf           = data.write_file
 processed_wf = wf['data']['processed']
@@ -32,26 +33,24 @@ arrays_rf  = raw_rf['arrays']
 # results = E200_get_data_cam(scalars)
 # print results
 
-camname = 'ELANEX'
-head_str = 'ss_{}_'.format(camname)
+camname         = 'ELANEX'
+head_str        = 'ss_{}_'.format(camname)
 energy_axis_str = vectors_wf['{}energy_axis'.format(head_str)]
 uids            = energy_axis_str['UID'].value
-uid = uids[0]
+uid             = uids[0]
 
 print type(uid)
 
 elanex_str = raw_rf['images']['ELANEX']
-# uid        = elanex_str['UID'][0][0]
-elanex     = mt.E200.E200_api_getdat(elanex_str,uid)
+# uid      = elanex_str['UID'][0][0]
+elanex     = E200.E200_api_getdat(elanex_str,uid)
 
-quadval_str = data.read_file['data']['raw']['scalars']['step_value']
+setQS_str = scalars_rf['step_value']
+setQS     = E200.E200_api_getdat(setQS_str)
+print 'Unique setQS: {}'.format(np.unique(setQS.dat))
 
-for val in quadval_str['UID'].value:
-	if val == uid:
-		print 'here'
-	else:
-		pass
-		print 'nothere'
+elanex_y_string = 'XPS_LI20_DWFA_M5'
 
-
-# quadval     = mt.E200.E200_api_getdat(quadval_str,uid).dat[0]
+elanex_y_str = scalars_rf[elanex_y_string]
+elanex_y = E200.E200_api_getdat(elanex_y_str)
+print 'Unique elanex_y: {}'.format(np.unique(elanex_y.dat))
