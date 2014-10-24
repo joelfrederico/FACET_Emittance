@@ -154,8 +154,8 @@ def analyze_matlab(
 		ymotor=ymotor[0]*1e-3
 		# print 'Ymotor is {}'.format(ymotor)
 		logger.error('Original ymotor is: {}'.format(ymotor))
-		
-		ymotor = 40 - 55*setQS/(setQS+20.35)
+
+		ymotor=setQS.elanex_y_motor()
 		logger.error('Reconstructed ymotor is: {ymotor}'.format(ymotor=ymotor))
 	else:
 		ymotor=None
@@ -181,21 +181,12 @@ def analyze_matlab(
 	# ======================================
 	# Quadrupole values
 	# ======================================
-
-
-	logger.error('QS1_BDES is: {}'.format(QS1_BDES))
-	logger.error('QS2_BDES is: {}'.format(QS2_BDES))
-
-	QS1_K1 = sltr.BDES2K(bdes=QS1_BDES,quad_length=1,energy=setQS+20.35)
-	QS2_K1 = sltr.BDES2K(bdes=QS2_BDES,quad_length=1,energy=setQS+20.35)
+	QS1_K1 = setQS.QS1.K1
+	QS2_K1 = setQS.QS2.K1
 
 	logger.error('QS1_K1 is: {}'.format(QS1_K1))
 	logger.error('QS2_K1 is: {}'.format(QS2_K1))
 
-	# ======================================
-	# Elanex motor positions
-	# ======================================
-	
 	# ======================================
 	# Create beamlines
 	# ======================================
