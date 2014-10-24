@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
-import argparse
 
-import mytools as mt
-from ButterflyGUI import ButterflyGUI
-from analyze_matlab import analyze_matlab
-import h5py as h5
 import matplotlib as mpl
 mpl.rcParams['image.aspect'] = 'auto'
-import numpy as np
+
+import E200
+import argparse
+import h5py as h5
 import logging
+import mytools as mt
+import numpy as np
+from ButterflyGUI import ButterflyGUI
+from analyze_matlab import analyze_matlab
 
 def runGUI(filename,camname,imgnum,verbose=False,loglevel=0):
 	# ======================================
@@ -46,7 +48,7 @@ def runGUI(filename,camname,imgnum,verbose=False,loglevel=0):
 	logger.addHandler(debugh)
 
 
-	data=mt.E200.E200_load_data(filename)
+	data=E200.E200_load_data(filename)
 	
 	# Generate or retrieve qt app
 	app = mt.qt.get_app()
