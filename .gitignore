@@ -30,4 +30,4 @@ java.opts
 *.out
 *.par
 java.opts
-ButterflyEmittancePython
+*.ipynb
