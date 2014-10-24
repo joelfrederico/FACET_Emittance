@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-
-import mytools as mt
-import sys
-from PyQt4 import QtGui,QtCore
-import mainwindow_auto as mw
-import numpy as np
-import h5py as h5
-import warnings
 import logging
 logger=logging.getLogger(__name__)
-# print 'ButterflyGUI.py name is {}'.format(__name__)
+
+import h5py as h5
+import mainwindow_auto as mw
+import mytools as mt
+import numpy as np
+import sys
+import warnings
+
+from PyQt4 import QtGui,QtCore
 
 class ButterflyGUI(QtGui.QMainWindow):
 	def __init__(self,analyzefcn,dataset=None,camname=None,imgnum=None,verbose=False):
