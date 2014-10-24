@@ -7,7 +7,9 @@ import mainwindow_auto as mw
 import numpy as np
 import h5py as h5
 import warnings
-from mytools import Indent
+import logging
+logger=logging.getLogger(__name__)
+# print 'ButterflyGUI.py name is {}'.format(__name__)
 
 class ButterflyGUI(QtGui.QMainWindow):
 	def __init__(self,analyzefcn,dataset=None,camname=None,imgnum=None,verbose=False):
@@ -15,7 +17,6 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# Save default info
 		# ======================================
 		self.verbose    = verbose
-		self.indent     = Indent.Indent()
 
 		self.analyzefcn = analyzefcn
 		self.dataset    = dataset
@@ -48,8 +49,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 			camname=camname[0]
 		if imgnum is None:
 			imgnum=1
-		if verbose:
-			print 'Camera name is: {}, image number is: {}'.format(camname,imgnum)
+		# if verbose:
+		#         print 'Camera name is: {}, image number is: {}'.format(camname,imgnum)
+		logger.debug('Camera name is: {}, image number is: {}'.format(camname,imgnum))
 		self.loadfile(camname,imgnum)
 
 		self.ui.imageview_mpl.setSliderValue(3600)
@@ -80,23 +82,16 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.plottype.clear()
 		self.plotoptions = np.array([
 			['Normalized Emittance', lambda val:val.scanfit.fitresults.emitn],
-			['Beta', lambda val:val.scanfit.fitresults.twiss.beta],
-			['Beta*', lambda val:val.scanfit.fitresults.twiss.betastar],
-			['Alpha', lambda val:val.scanfit.fitresults.twiss.alpha],
-			['s*', lambda val:val.scanfit.fitresults.twiss.sstar],
-			['MinSpot', lambda val:val.scanfit.fitresults.twiss.minspotsize(val.scanfit.fitresults.emit)],
-			['Geometric Emittance',lambda val:val.scanfit.fitresults.emit]
+			['Beta',                 lambda val:val.scanfit.fitresults.twiss.beta],
+			['Beta*',                lambda val:val.scanfit.fitresults.twiss.betastar],
+			['Alpha',                lambda val:val.scanfit.fitresults.twiss.alpha],
+			['s*',                   lambda val:val.scanfit.fitresults.twiss.sstar],
+			['MinSpot',              lambda val:val.scanfit.fitresults.twiss.minspotsize(val.scanfit.fitresults.emit)],
+			['Geometric Emittance',  lambda val:val.scanfit.fitresults.emit]
 			])
 		self.ui.plottype.addItems(self.plotoptions[:,0])
 		# self.ui.plottype.addItems(['emit','emitn'])
 		self.ui.plottype.currentIndexChanged.connect(self.plotdataset)
-
-	def vprint(self,*args,**kwargs):
-		if self.verbose:
-			self.iprint(*args,**kwargs)
-
-	def iprint(self,*args,**kwargs):
-		Indent.iprint(self.indent,*args,**kwargs)
 
 	def saverect(self,rect):
 		ind = self.ui.imagenum_slider.value-1
@@ -111,12 +106,18 @@ class ButterflyGUI(QtGui.QMainWindow):
 		mt.E200.E200_api_updateUID(scalars['ss_{}_width'.format(self.camname)],UID=uid,value=rect.get_width())
 		mt.E200.E200_api_updateUID(scalars['ss_{}_height'.format(self.camname)],UID=uid,value=rect.get_height())
 		self.data.file.flush()
-		print 'Saving to index {}, uid {:0.0f}'.format(ind,uid)
-		print 'Image number is {}'.format(self.imgnum)
-		print rect_xy
-		print rect.get_width()
-		print rect.get_height()
-		print 'saved'
+		# print 'Saving to index {}, uid {:0.0f}'.format(ind,uid)
+		# print 'Image number is {}'.format(self.imgnum)
+		# print rect_xy
+		# print rect.get_width()
+		# print rect.get_height()
+		# print 'saved'
+		logger.debug('Saving to index {}, uid {:0.0f}'.format(ind,uid))
+		logger.debug('Image number is {}'.format(self.imgnum))
+		logger.debug('{}'.format(rect_xy))
+		logger.debug('{}'.format(rect.get_width()))
+		logger.debug('{}'.format(rect.get_height()))
+		logger.debug('saved')
 
 	def plotdataset(self,ind=None):
 		if ind is None:
@@ -124,8 +125,10 @@ class ButterflyGUI(QtGui.QMainWindow):
 		selected_fits=self.fitresults[self.validimg]
 		x = np.vectorize(self.plotoptions[ind,1])
 		self.ui.dataset_mpl.plot(x(selected_fits))
-		print self.plotoptions[ind,0]
-		print 'Attempted to plot!'
+		logger.debug('{}'.format(self.plotoptions[ind,0]))
+		logger.info('Attempted to plot!')
+		# print self.plotoptions[ind,0]
+		# print 'Attempted to plot!'
 
 	def saveworld(self):
 		try:
@@ -142,8 +145,8 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		if val is not None:
 			self.imgnum=val
-		self.vprint('Slider changed, image number is: {}'.format(self.imgnum))
-		self.indent.level +=1
+		logger.debug('Slider changed, image number is: {}'.format(self.imgnum))
+		# self.indent.level +=1
 
 		# ======================================
 		# Open the right image for viewing
@@ -160,8 +163,8 @@ class ButterflyGUI(QtGui.QMainWindow):
 		uid = self.allimgs.uid[self.imgnum-1]
 		# Print all UIDs
 		uid = uid[0]
-		self.vprint('UID type is: {}'.format(type(uid)))
-		self.vprint('Opening UID: {:0.0f}'.format(uid))
+		logger.debug('UID type is: {}'.format(type(uid)))
+		logger.debug('Opening UID: {:0.0f}'.format(uid))
 		rect = self.ui.imageview_mpl.rect
 		processed = self.dataset.write_file['data']['processed']
 		vectors = processed['vectors']
@@ -178,15 +181,15 @@ class ButterflyGUI(QtGui.QMainWindow):
 			height  = mt.E200.E200_api_getdat(scalars['ss_{}_height'.format(self.camname)],uid,verbose=self.verbose)
 			# One element each for rect_xy, width, height
 			if np.size(rect_xy.dat) == 2 and np.size(width.dat) == 1 and np.size(height.dat) == 1:
-				self.vprint('Loading rect from file...')
+				logger.info('Loading rect from file...')
 				rect_xy = rect_xy.dat[0]
 				width   = width.dat[0]
 				height  = height.dat[0]
-				self.vprint('Width is: {}, Height is: {}'.format(width,height))
+				logger.debug('Width is: {}, Height is: {}'.format(width,height))
 
-				self.indent.level += 1
-				self.vprint('Uid loaded is {:0.0f}'.format(uid))
-				self.vprint('Image number is {}'.format(self.imgnum))
+				# self.indent.level += 1
+				logger.debug('Uid loaded is {:0.0f}'.format(uid))
+				logger.debug('Image number is {}'.format(self.imgnum))
 
 				border = np.array([width,height])*0.1
 				border_px = None
@@ -197,10 +200,10 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# If unsuccessful, calculate rect info
 		# ======================================
 		if not use_loaded_rect:
-			self.vprint('Replacing rect...')
-			self.indent.level += 1
+			logger.info('Replacing rect...')
+			# self.indent.level += 1
 			if self.camname=='CMOS_FAR':
-				self.vprint('Using CMOS_FAR default rect')
+				logger.debug('Using CMOS_FAR default rect')
 				x0     = 275
 				x1     = 325
 				y0     = 1870
@@ -208,14 +211,14 @@ class ButterflyGUI(QtGui.QMainWindow):
 				border = None
 				border_px = np.array([250,250])
 			elif self.camname=='ELANEX':
-				self.vprint('Using ELANEX default rect')
+				logger.debug('Using ELANEX default rect')
 				x0     = 0 + 50
 				x1     = self.ui.imageview_mpl.image.shape[0] - 50
 				y0     = 0 + 50
 				y1     = self.ui.imageview_mpl.image.shape[1] - 50
 				border = None
 				border_px = np.array([50,50])
-			self.indent.level -= 1
+			# self.indent.level -= 1
 			rect_xy = np.array([y0, x0])
 			width   = (y1 - y0)
 			height  = (x1 - x0)
@@ -233,11 +236,11 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		# Set and draw rect
 		# ======================================
-		self.indent.level += 1
-		self.vprint('Rect_xy of rect is {}'.format(rect_xy))
-		self.vprint('Width of rect is {}'.format(width))
-		self.vprint('Height of rect is {}'.format(height))
-		self.indent.level -= 1
+		# self.indent.level += 1
+		logger.debug('Rect_xy of rect is {}'.format(rect_xy))
+		logger.debug('Width of rect is {}'.format(width))
+		logger.debug('Height of rect is {}'.format(height))
+		# self.indent.level -= 1
 
 		rect.set_xy(rect_xy)
 		rect.set_width(width)
@@ -247,8 +250,8 @@ class ButterflyGUI(QtGui.QMainWindow):
 		self.ui.imagenum_valid_checkbox.setChecked(self.validimg[self.imgnum-1])
 		self.ui.imageview_mpl.ax.figure.canvas.draw()
 
-		self.indent.level -=1
-		self.vprint('Finished updating after slider changed')
+		# self.indent.level -=1
+		logger.info('Finished updating after slider changed')
 
 	def camname_combobox_changed(self):
 		self.camname=self.ui.camname_combobox.currentText()
@@ -257,23 +260,23 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# print 'Tracking is {}'.format(self.ui.imagenum_slider._tracking)
 
 	def loadimages(self):
-		self.iprint('Loading images...')
-		self.indent.level += 1
+		logger.info('Loading images...')
+		# self.indent.level += 1
 
 		imgstr=self.data['raw']['images'][str(self.camname)]
 
 		uids = imgstr['UID']
-		self.vprint('Number of images requested: {}'.format(uids.shape[0]))
+		logger.debug('Number of images requested: {}'.format(uids.shape[0]))
 
 		out = mt.E200.E200_load_images(imgstr,uids)
 
-		self.indent.level -= 1
-		self.iprint('Finished loading images')
+		# self.indent.level -= 1
+		logger.info('Finished loading images')
 		return out
 
 	def loadfile(self,camname=None,imgnum=1):
-		self.iprint('Loading file...')
-		self.indent.level += 1
+		logger.info('Loading file...')
+		# self.indent.level += 1
 		# ======================================
 		# Get and save camname if necessary
 		# ======================================
@@ -314,8 +317,8 @@ class ButterflyGUI(QtGui.QMainWindow):
 
 		self.imagenum_slider_changed()
 
-		self.indent.level -= 1
-		self.iprint('Finished loading file')
+		# self.indent.level -= 1
+		logger.info('Finished loading file')
 
 	def set_camnames(self,infile,camname=None):
 		camnames = np.array(infile['data']['raw']['images'].keys())
@@ -341,21 +344,33 @@ class ButterflyGUI(QtGui.QMainWindow):
 
 	def run_sim(self):
 		# =====================================
+		# Get UID
+		# =====================================
+		ind = self.ui.imagenum_slider.value-1
+		uid = self.allimgs.uid[ind]
+		uid = uid[0]
+		logger.debug('UID is {}'.format(uid))
+
+		# =====================================
 		# Run the sim
 		# =====================================
-		print 'Running sim!'
+		# print 'Running sim!'
+		logger.info('Running sim!')
 		self.ui.fitview_mpl.ax.clear()
 		self.ui.roiview_mpl.ax.clear()
 		self.rect = self.ui.imageview_mpl.rect
-		self.out = self.analyzefcn(f=self.infile,
-				data=self.data,
-				camname=self.camname,
-				imgnum=self.imgnum,
-				oimg = self.oimg,
-				verbose = False,
-				roiaxes=self.ui.roiview_mpl.ax,
-				plotaxes=self.ui.fitview_mpl.ax,
-				rect=self.rect)
+		self.out = self.analyzefcn(
+				f        = self.infile,
+				data     = self.data,
+				camname  = self.camname,
+				imgnum   = self.imgnum,
+				oimg     = self.oimg,
+				verbose  = False,
+				roiaxes  = self.ui.roiview_mpl.ax,
+				plotaxes = self.ui.fitview_mpl.ax,
+				rect     = self.rect,
+				uid      = uid
+				)
 
 		# =====================================
 		# Redraw results boxes
@@ -382,12 +397,6 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# =====================================
 		self.updateEmitPlot()
 
-		# =====================================
-		# Get UID
-		# =====================================
-		ind = self.ui.imagenum_slider.value-1
-		uid = self.allimgs.uid[ind]
-		uid = uid[0]
 
 		# =====================================
 		# Extract results and save
@@ -404,7 +413,8 @@ class ButterflyGUI(QtGui.QMainWindow):
 		fitresults = scanfit.fitresults
 
 		rect_arr = np.array([self.rect.get_x(),self.rect.get_y(),self.rect.get_height(),self.rect.get_width()])
-		print rect_arr
+		# print rect_arr
+		logger.info('Value for rect_arr: {}'.format(rect_arr))
 
 		result_array = [
 			[scalars , 'ss_{}_emit_n'.format(self.camname)           , fitresults.emitn         ] ,
@@ -421,15 +431,16 @@ class ButterflyGUI(QtGui.QMainWindow):
 
 		# Write results to file
 		for pair in result_array:
-			self.vprint('Writing to group {}...'.format(pair[1]))
+			logger.debug('Writing to group {}...'.format(pair[1]))
 			try:
 				self._write_result(pair[0],pair[1],uid,pair[2])
 			except:
-				print 'Error on saving group {} with value:'.format(pair[1])
-				print pair[2]
+				logger.error('Error on saving group {} with value: {}'.format(pair[1],pair[2]))
+				# print 'Error on saving group {} with value:'.format(pair[1])
+				# print pair[2]
 				raise
 
-		self.vprint('Finished writing')
+		logger.debug('Finished writing')
 
 	def _write_result(self,group,name,uid,value):
 		mt.E200.E200_create_data(group,name)
@@ -440,9 +451,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 	def updateEmitPlot(self):
 		validresults = self.fitresults[self.validimg]
 		self.emit = np.empty(validresults.shape[0])
-		print validresults
-		print validresults.shape
-		print type(validresults)
+		# print validresults
+		# print validresults.shape
+		# print type(validresults)
 		for i,val in enumerate(validresults):
 			self.emit[i] = val.scanfit.fitresults.emitn
 
