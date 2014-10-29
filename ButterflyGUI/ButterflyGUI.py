@@ -2,6 +2,7 @@
 import logging
 logger=logging.getLogger(__name__)
 
+import E200
 import h5py as h5
 import mainwindow_auto as mw
 import mytools as mt
@@ -102,9 +103,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 		vectors = processed['vectors']
 		scalars = processed['scalars']
 		rect_xy = np.array(rect.get_xy())
-		mt.E200.E200_api_updateUID(vectors['ss_{}_rect_xy'.format(self.camname)],UID=uid,value=rect_xy)
-		mt.E200.E200_api_updateUID(scalars['ss_{}_width'.format(self.camname)],UID=uid,value=rect.get_width())
-		mt.E200.E200_api_updateUID(scalars['ss_{}_height'.format(self.camname)],UID=uid,value=rect.get_height())
+		E200.E200_api_updateUID(vectors['ss_{}_rect_xy'.format(self.camname)],UID=uid,value=rect_xy)
+		E200.E200_api_updateUID(scalars['ss_{}_width'.format(self.camname)],UID=uid,value=rect.get_width())
+		E200.E200_api_updateUID(scalars['ss_{}_height'.format(self.camname)],UID=uid,value=rect.get_height())
 		self.data.file.flush()
 		# print 'Saving to index {}, uid {:0.0f}'.format(ind,uid)
 		# print 'Image number is {}'.format(self.imgnum)
@@ -176,9 +177,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		use_loaded_rect=False
 		if rect_info_exists:
-			rect_xy = mt.E200.E200_api_getdat(vectors['ss_{}_rect_xy'.format(self.camname)],uid,verbose=self.verbose)
-			width   = mt.E200.E200_api_getdat(scalars['ss_{}_width'.format(self.camname)],uid,verbose=self.verbose)
-			height  = mt.E200.E200_api_getdat(scalars['ss_{}_height'.format(self.camname)],uid,verbose=self.verbose)
+			rect_xy = E200.E200_api_getdat(vectors['ss_{}_rect_xy'.format(self.camname)],uid,verbose=self.verbose)
+			width   = E200.E200_api_getdat(scalars['ss_{}_width'.format(self.camname)],uid,verbose=self.verbose)
+			height  = E200.E200_api_getdat(scalars['ss_{}_height'.format(self.camname)],uid,verbose=self.verbose)
 			# One element each for rect_xy, width, height
 			if np.size(rect_xy.dat) == 2 and np.size(width.dat) == 1 and np.size(height.dat) == 1:
 				logger.info('Loading rect from file...')
@@ -224,13 +225,13 @@ class ButterflyGUI(QtGui.QMainWindow):
 			height  = (x1 - x0)
 
 			
-			mt.E200.E200_create_data(vectors,'ss_{}_rect_xy'.format(self.camname))
-			mt.E200.E200_create_data(scalars,'ss_{}_width'.format(self.camname))
-			mt.E200.E200_create_data(scalars,'ss_{}_height'.format(self.camname))
+			E200.E200_create_data(vectors,'ss_{}_rect_xy'.format(self.camname))
+			E200.E200_create_data(scalars,'ss_{}_width'.format(self.camname))
+			E200.E200_create_data(scalars,'ss_{}_height'.format(self.camname))
 
-			mt.E200.E200_api_updateUID(vectors['ss_{}_rect_xy'.format(self.camname)],UID=uid,value=rect_xy)
-			mt.E200.E200_api_updateUID(scalars['ss_{}_width'.format(self.camname)],UID=uid,value=width)
-			mt.E200.E200_api_updateUID(scalars['ss_{}_height'.format(self.camname)],UID=uid,value=height)
+			E200.E200_api_updateUID(vectors['ss_{}_rect_xy'.format(self.camname)],UID=uid,value=rect_xy)
+			E200.E200_api_updateUID(scalars['ss_{}_width'.format(self.camname)],UID=uid,value=width)
+			E200.E200_api_updateUID(scalars['ss_{}_height'.format(self.camname)],UID=uid,value=height)
 			processed.file.flush()
 
 		# ======================================
@@ -268,7 +269,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		uids = imgstr['UID']
 		logger.debug('Number of images requested: {}'.format(uids.shape[0]))
 
-		out = mt.E200.E200_load_images(imgstr,uids)
+		out = E200.E200_load_images(imgstr,uids)
 
 		# self.indent.level -= 1
 		logger.info('Finished loading images')
@@ -443,8 +444,8 @@ class ButterflyGUI(QtGui.QMainWindow):
 		logger.debug('Finished writing')
 
 	def _write_result(self,group,name,uid,value):
-		mt.E200.E200_create_data(group,name)
-		mt.E200.E200_api_updateUID(group[name],UID=uid,value=value)
+		E200.E200_create_data(group,name)
+		E200.E200_api_updateUID(group[name],UID=uid,value=value)
 
 		group.file.flush()
 
