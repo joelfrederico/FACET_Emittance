@@ -1,28 +1,62 @@
 #!/usr/bin/env python
 
-import mytools as mt
-import mytools.qt as myqt
-from PyQt4 import QtGui,QtCore
-import h5py as h5
-import numpy as np
 import ButterflyEmittancePython as bt
-import matplotlib.pyplot as plt
+import E200
+import h5py as h5
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import mytools as mt
+import numpy as np
 from E200_get_data_cam import E200_get_data_cam
+from PyQt4 import QtGui,QtCore
+import logging
 
-# app = myqt.get_app()
-# buttons=[myqt.Button(QtGui.QMessageBox.Ok),myqt.Button('this',QtGui.QMessageBox.HelpRole,buttontype='Default')]
-# # buttons=None
-# buttonbox=myqt.ButtonMsg('this','that',buttons=buttons)
-# 
-# print buttonbox.clickedArray()
+# try:
+#         wf.close()
+# except:
+#         pass
 
-try:
-	wf.close()
-except:
-	pass
+# sets = [['20140625','13438'],
+#         ['20140625','13449'],
+#         ['20140629','13537']]
+# sets = [['20140625','13438'],
+# sets = [['20140629','13537']]
+sets = [['20140625','13450']]
 
-sets = [['20140625','13438']]
+# ======================================
+# Set up logging
+# ======================================
+loglevel = 'debug'
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+fmtr_file = mt.classes.IndentFormatter(indent_offset=8)
+fmtr_stream = mt.classes.IndentFormatter()
+
+ch = logging.StreamHandler()
+if loglevel == 'debug':
+	ch.setLevel(logging.DEBUG)
+elif loglevel == 'info':
+	ch.setLevel(logging.INFO)
+elif loglevel == 'warning':
+	ch.setLevel(logging.WARNING)
+elif loglevel == 'critical':
+	ch.setLevel(logging.CRITICAL)
+ch.setFormatter(fmtr_stream)
+logger.addHandler(ch)
+
+fh = logging.FileHandler(filename='postproc.log',mode='w')
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(fmtr_file)
+logger.addHandler(fh)
+
+fmtr = mt.classes.IndentFormatter(indent_offset=8,fmt='%(indent)s%(message)s')
+debugh = logging.FileHandler(filename='postproc_debug.log',mode='w')
+debugh.setLevel(9)
+debugh.setFormatter(fmtr)
+logger.addHandler(debugh)
+
+logger.critical('Logging set up')
 
 for pair in sets:
 	setdate=pair[0]
@@ -30,7 +64,7 @@ for pair in sets:
 
 	loadfile = 'nas/nas-li20-pm00/E200/2014/{}/E200_{}'.format(setdate,setnumber)
 	
-	data      = mt.E200.E200_load_data(loadfile)
+	data      = E200.E200_load_data(loadfile)
 	wf        = data.write_file
 	processed = wf['data']['processed']
 	vectors   = processed['vectors']
@@ -40,46 +74,56 @@ for pair in sets:
 	camname_list = E200_get_data_cam(scalars)
 
 	for camname in camname_list:
+		camname = 'CMOS_FAR'
 		head_str = 'ss_{}_'.format(camname)
-
-
 	
 		energy_axis_str = vectors['{}energy_axis'.format(head_str)]
 		uids            = energy_axis_str['UID'].value
 
 		for uid in uids:
+			logger.info('UID is: {}'.format(uid))
 	
-			energy_axis          = mt.E200.E200_api_getdat(energy_axis_str,uid).dat[0][0]
+			energy_axis          = E200.E200_api_getdat(energy_axis_str,uid).dat[0]
 
 			variance_str         = vectors['{}variance'.format(head_str)]
-			variance             = mt.E200.E200_api_getdat(variance_str,uid).dat[0][0]
+			variance             = E200.E200_api_getdat(variance_str,uid).dat[0]
 
 			LLS_beta_str         = vectors['{}LLS_beta'.format(head_str)]
-			LLS_beta             = mt.E200.E200_api_getdat(LLS_beta_str,uid).dat[0][0]
+			LLS_beta             = E200.E200_api_getdat(LLS_beta_str,uid).dat[0]
 
 			LLS_X_unweighted_str = arrays['{}LLS_X_unweighted'.format(head_str)]
-			LLS_X_unweighted     = mt.E200.E200_api_getdat(LLS_X_unweighted_str,uid).dat[0][0]
+			LLS_X_unweighted     = E200.E200_api_getdat(LLS_X_unweighted_str,uid).dat[0]
 
 			LLS_y_error_str      = vectors['{}LLS_y_error'.format(head_str)]
-			LLS_y_error          = mt.E200.E200_api_getdat(LLS_y_error_str,uid).dat[0][0]
+			LLS_y_error          = E200.E200_api_getdat(LLS_y_error_str,uid).dat[0]
 
 			image_str            = arrays['{}image'.format(head_str)]
-			image                = mt.E200.E200_api_getdat(image_str,uid).dat[0][0]
+			image                = E200.E200_api_getdat(image_str,uid).dat[0]
 
 			rect_str             = vectors['{}rect'.format(head_str)]
-			rect                 = mt.E200.E200_api_getdat(rect_str,uid).dat[0][0]
+			rect                 = E200.E200_api_getdat(rect_str,uid).dat[0]
 
 			emit_n_str           = scalars['{}emit_n'.format(head_str)]
-			emit_n               = mt.E200.E200_api_getdat(emit_n_str,uid).dat[0][0]
+			try:
+				emit_n = E200.E200_api_getdat(emit_n_str,uid).dat[0][0]
+			except:
+				pass
+				emit_n = E200.E200_api_getdat(emit_n_str,uid).dat[0]
 
 			betastar_str         = scalars['{}betastar'.format(head_str)]
-			betastar             = mt.E200.E200_api_getdat(betastar_str,uid).dat[0][0]
+			try:
+				betastar             = E200.E200_api_getdat(betastar_str,uid).dat[0][0]
+			except:
+				betastar             = E200.E200_api_getdat(betastar_str,uid).dat[0]
 
 			sstar_str            = scalars['{}sstar'.format(head_str)]
-			sstar                = mt.E200.E200_api_getdat(sstar_str,uid).dat[0][0]
+			try:
+				sstar                = E200.E200_api_getdat(sstar_str,uid).dat[0][0]
+			except:
+				sstar                = E200.E200_api_getdat(sstar_str,uid).dat[0]
 
 			quadval_str          = data.read_file['data']['raw']['scalars']['step_value']
-			quadval              = mt.E200.E200_api_getdat(quadval_str,uid).dat[0]
+			quadval              = E200.E200_api_getdat(quadval_str,uid).dat[0]
 		
 			# ======================================
 			# Fit figure

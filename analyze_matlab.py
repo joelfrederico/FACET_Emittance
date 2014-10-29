@@ -3,6 +3,7 @@ import logging
 logger=logging.getLogger(__name__)
 
 import ButterflyEmittancePython as bt
+import E200
 import argparse
 import copy
 import h5py as h5
@@ -59,7 +60,7 @@ def analyze_matlab(
 	raw_rf     = data['raw']
 	scalars_rf = raw_rf['scalars']
 	setQS_str  = scalars_rf['step_value']
-	setQS_dat  = mt.E200.E200_api_getdat(setQS_str,uid).dat[0]
+	setQS_dat  = E200.E200_api_getdat(setQS_str,uid).dat[0]
 	setQS = mt.hardcode.setQS(setQS_dat)
 	logger.error('setQS_dat is: {}'.format(setQS_dat))
 	logger.error('setQS_dat type is: {}'.format(type(setQS_dat)))
@@ -99,7 +100,7 @@ def analyze_matlab(
 	# Get image
 	# ======================================
 	if oimg is None:
-		oimg = mt.E200.E200_load_images(imgstr,f)
+		oimg = E200.E200_load_images(imgstr,f)
 		oimg = oimg.image[imgnum-1,:,:]
 	# oimg=np.fliplr(oimg)
 
@@ -115,7 +116,10 @@ def analyze_matlab(
 	n_groups  = np.size(hist_vec)
 	# hist_data = np.zeros([n_groups,2])
 	x_pix     = np.round(mt.linspacestep(xstart,xstop-1,1))
-	x_meter   = (x_pix-np.mean(x_pix)) * res / np.sqrt(2)
+	x_meter   = (x_pix-np.mean(x_pix)) * res
+	if camname == 'ELANEX':
+		logger.debug('Lanex is tipped at 45 degrees: dividing x axis by sqrt(2)')
+		x_meter = x_meter/np.sqrt(2)
 	x_sq      = x_meter**2
 	
 	num_pts      = n_groups
@@ -155,15 +159,16 @@ def analyze_matlab(
 		# print 'Ymotor is {}'.format(ymotor)
 		logger.error('Original ymotor is: {}'.format(ymotor))
 
-		ymotor=setQS.elanex_y_motor()
+		ymotor=setQS.elanex_y_motor()*1e-3
 		logger.error('Reconstructed ymotor is: {ymotor}'.format(ymotor=ymotor))
 	else:
 		ymotor=None
-	eaxis=mt.E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
-	yimg = mt.linspacestep(1,img.shape[1])
-	imgeaxis=mt.E200.eaxis(camname=camname,y=yimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
-	yoimg = mt.linspacestep(1,oimg.shape[1])
-	oimgeaxis=mt.E200.eaxis(camname=camname,y=yoimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+
+	eaxis     = E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	yimg      = mt.linspacestep(1,img.shape[1])
+	imgeaxis  = E200.eaxis(camname=camname,y=yimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	yoimg     = mt.linspacestep(1,oimg.shape[1])
+	oimgeaxis = E200.eaxis(camname=camname,y=yoimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
 	
 	# ======================================
 	# Default Twiss and beam params
@@ -191,11 +196,18 @@ def analyze_matlab(
 	# Create beamlines
 	# ======================================
 	# beamline=bt.beamlines.IP_to_cherfar(twiss_x=twiss,twiss_y=twiss,gamma=gamma)
-	beamline=bt.beamlines.IP_to_lanex(
-			beam_x=twiss,beam_y=twiss,
-			QS1_K1 = QS1_K1,
-			QS2_K1 = QS2_K1
-			)
+	if camname == 'ELANEX':
+		beamline=bt.beamlines.IP_to_lanex(
+				beam_x=twiss,beam_y=twiss,
+				QS1_K1 = QS1_K1,
+				QS2_K1 = QS2_K1
+				)
+	else:
+		beamline=bt.beamlines.IP_to_cherfar(
+				beam_x=twiss,beam_y=twiss,
+				QS1_K1 = QS1_K1,
+				QS2_K1 = QS2_K1
+				)
 
 	beamline_array = np.array([])
 	for i,value in enumerate(eaxis):

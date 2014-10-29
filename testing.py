@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from E200_get_data_cam import E200_get_data_cam
 
-sets      = ['20140625','13438']
+sets      = ['20140629','13537']
 setdate   = sets[0]
 setnumber = sets[1]
 
@@ -33,6 +33,10 @@ arrays_rf  = raw_rf['arrays']
 # results = E200_get_data_cam(scalars)
 # print results
 
+# ======================================
+# Get UID from analysis output.
+# ======================================
+
 camname         = 'ELANEX'
 head_str        = 'ss_{}_'.format(camname)
 energy_axis_str = vectors_wf['{}energy_axis'.format(head_str)]
@@ -46,11 +50,34 @@ elanex_str = raw_rf['images']['ELANEX']
 elanex     = E200.E200_api_getdat(elanex_str,uid)
 
 setQS_str = scalars_rf['step_value']
-setQS     = E200.E200_api_getdat(setQS_str)
-print 'Unique setQS: {}'.format(np.unique(setQS.dat))
+setQS_dat = E200.E200_api_getdat(setQS_str)
+setQS_unique = np.unique(setQS_dat.dat)
+print 'Unique setQS: {}'.format(setQS_unique)
+for val in setQS_unique:
+	setQS  = mt.hardcode.setQS(val)
+	ymotor = setQS.elanex_y_motor()
+	QS1_BDES = setQS.QS1.BDES
+	QS2_BDES = setQS.QS2.BDES
+
+	print 'setQS: {val}, ymotor: {ymotor}, QS1 BDES: {QS1_BDES}, QS2 BDES: {QS2_BDES}'.format(
+			val=val,
+			ymotor=ymotor,
+			QS1_BDES=QS1_BDES,
+			QS2_BDES=QS2_BDES
+			)
 
 elanex_y_string = 'XPS_LI20_DWFA_M5'
 
 elanex_y_str = scalars_rf[elanex_y_string]
 elanex_y = E200.E200_api_getdat(elanex_y_str)
 print 'Unique elanex_y: {}'.format(np.unique(elanex_y.dat))
+
+qs1_string = 'LI20_LGPS_3261_BDES'
+qs1_str = scalars_rf[qs1_string]
+qs1_dat = E200.E200_api_getdat(qs1_str)
+print 'Unique qs1: {}'.format(np.unique(qs1_dat.dat))
+
+qs2_string = 'LI20_LGPS_3311_BDES'
+qs2_str = scalars_rf[qs2_string]
+qs2_dat = E200.E200_api_getdat(qs2_str)
+print 'Unique qs2: {}'.format(np.unique(qs2_dat.dat))

@@ -20,11 +20,14 @@ def runGUI(filename,camname,imgnum,verbose=False,loglevel=0):
 	# ======================================
 	logger = logging.getLogger()
 	logger.setLevel(logging.DEBUG)
-	fh = logging.FileHandler(filename='runGUI.log',mode='w')
-	fh.setLevel(logging.DEBUG)
+
+	fmtr = mt.classes.IndentFormatter(indent_offset=8)
+	fmtr_msgonly = mt.classes.IndentFormatter('%(indent)s%(message)s')
 
 	debugh = logging.FileHandler(filename='debug.log',mode='w')
 	debugh.setLevel(logging.ERROR)
+	debugh.setFormatter(fmtr_msgonly)
+	logger.addHandler(debugh)
 
 	ch = logging.StreamHandler()
 	if loglevel == 'debug':
@@ -35,18 +38,17 @@ def runGUI(filename,camname,imgnum,verbose=False,loglevel=0):
 		ch.setLevel(logging.WARNING)
 	elif loglevel == 'critical':
 		ch.setLevel(logging.CRITICAL)
-
-	fmtr = logging.Formatter('%(levelname)s - %(name)s:%(funcName)s%(lineno)d\n%(message)s\n')
-	fmtr_msgonly = logging.Formatter('%(message)s\n')
-
-	fh.setFormatter(fmtr)
 	ch.setFormatter(fmtr_msgonly)
-	debugh.setFormatter(fmtr_msgonly)
-
-	logger.addHandler(fh)
 	logger.addHandler(ch)
-	logger.addHandler(debugh)
 
+	fh = logging.FileHandler(filename='runGUI.log',mode='w')
+	fh.setLevel(logging.DEBUG)
+	fh.setFormatter(fmtr)
+	logger.addHandler(fh)
+
+	# ======================================
+	# Load data and run program
+	# ======================================
 
 	data=E200.E200_load_data(filename)
 	
