@@ -26,35 +26,7 @@ sets = [['20140625','13450']]
 # ======================================
 # Set up logging
 # ======================================
-loglevel = 'debug'
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-
-fmtr_file = mt.classes.IndentFormatter(indent_offset=8)
-fmtr_stream = mt.classes.IndentFormatter()
-
-ch = logging.StreamHandler()
-if loglevel == 'debug':
-	ch.setLevel(logging.DEBUG)
-elif loglevel == 'info':
-	ch.setLevel(logging.INFO)
-elif loglevel == 'warning':
-	ch.setLevel(logging.WARNING)
-elif loglevel == 'critical':
-	ch.setLevel(logging.CRITICAL)
-ch.setFormatter(fmtr_stream)
-logger.addHandler(ch)
-
-fh = logging.FileHandler(filename='postproc.log',mode='w')
-fh.setLevel(logging.DEBUG)
-fh.setFormatter(fmtr_file)
-logger.addHandler(fh)
-
-fmtr = mt.classes.IndentFormatter(indent_offset=8,fmt='%(indent)s%(message)s')
-debugh = logging.FileHandler(filename='postproc_debug.log',mode='w')
-debugh.setLevel(9)
-debugh.setFormatter(fmtr)
-logger.addHandler(debugh)
+logger = mt.mylogger(filename='postproc')
 
 logger.critical('Logging set up')
 
@@ -71,7 +43,8 @@ for pair in sets:
 	arrays    = processed['arrays']
 	scalars   = processed['scalars']
 
-	camname_list = E200_get_data_cam(scalars)
+	# camname_list = E200_get_data_cam(scalars)
+	camnames = E200_api_getdat(arrays['ss_camname'])
 
 	for camname in camname_list:
 		camname = 'CMOS_FAR'
@@ -104,23 +77,13 @@ for pair in sets:
 			rect                 = E200.E200_api_getdat(rect_str,uid).dat[0]
 
 			emit_n_str           = scalars['{}emit_n'.format(head_str)]
-			try:
-				emit_n = E200.E200_api_getdat(emit_n_str,uid).dat[0][0]
-			except:
-				pass
-				emit_n = E200.E200_api_getdat(emit_n_str,uid).dat[0]
+			emit_n               = E200.E200_api_getdat(emit_n_str,uid).dat[0]
 
 			betastar_str         = scalars['{}betastar'.format(head_str)]
-			try:
-				betastar             = E200.E200_api_getdat(betastar_str,uid).dat[0][0]
-			except:
-				betastar             = E200.E200_api_getdat(betastar_str,uid).dat[0]
+			betastar             = E200.E200_api_getdat(betastar_str,uid).dat[0]
 
 			sstar_str            = scalars['{}sstar'.format(head_str)]
-			try:
-				sstar                = E200.E200_api_getdat(sstar_str,uid).dat[0][0]
-			except:
-				sstar                = E200.E200_api_getdat(sstar_str,uid).dat[0]
+			sstar                = E200.E200_api_getdat(sstar_str,uid).dat[0]
 
 			quadval_str          = data.read_file['data']['raw']['scalars']['step_value']
 			quadval              = E200.E200_api_getdat(quadval_str,uid).dat[0]

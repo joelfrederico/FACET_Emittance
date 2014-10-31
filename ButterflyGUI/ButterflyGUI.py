@@ -13,13 +13,21 @@ import warnings
 from PyQt4 import QtGui,QtCore
 
 class ButterflyGUI(QtGui.QMainWindow):
-	def __init__(self,analyzefcn,dataset=None,camname=None,imgnum=None,verbose=False):
+	def __init__(self,
+			analyzefcn      ,
+			savefcn         ,
+			dataset = None  ,
+			camname = None  ,
+			imgnum  = None  ,
+			verbose = False
+			):
 		# ======================================
 		# Save default info
 		# ======================================
 		self.verbose    = verbose
 
 		self.analyzefcn = analyzefcn
+		self.savefcn    = savefcn
 		self.dataset    = dataset
 		self.data       = dataset.read_file['data']
 		self.infile     = dataset.read_file
@@ -94,6 +102,8 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# self.ui.plottype.addItems(['emit','emitn'])
 		self.ui.plottype.currentIndexChanged.connect(self.plotdataset)
 
+		logger.info('UI finished loading, idle...')
+
 	def saverect(self,rect):
 		ind = self.ui.imagenum_slider.value-1
 		uid = self.allimgs.uid[ind]
@@ -115,9 +125,9 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# print 'saved'
 		logger.debug('Saving to index {}, uid {:0.0f}'.format(ind,uid))
 		logger.debug('Image number is {}'.format(self.imgnum))
-		logger.debug('{}'.format(rect_xy))
-		logger.debug('{}'.format(rect.get_width()))
-		logger.debug('{}'.format(rect.get_height()))
+		logger.debug('Rect_xy: {}'.format(rect_xy))
+		logger.debug('Width: {}'.format(rect.get_width()))
+		logger.debug('Height: {}'.format(rect.get_height()))
 		logger.debug('saved')
 
 	def plotdataset(self,ind=None):
@@ -166,7 +176,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		uid = uid[0]
 		logger.debug('UID type is: {}'.format(type(uid)))
 		logger.debug('Opening UID: {:0.0f}'.format(uid))
-		rect = self.ui.imageview_mpl.rect
+		rect = self.ui.imageview_mpl.Rectangle
 		processed = self.dataset.write_file['data']['processed']
 		vectors = processed['vectors']
 		scalars = processed['scalars']
@@ -261,8 +271,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# print 'Tracking is {}'.format(self.ui.imagenum_slider._tracking)
 
 	def loadimages(self):
-		logger.info('Loading images...')
-		# self.indent.level += 1
+		logger.info('UI preparing to load images...')
 
 		imgstr=self.data['raw']['images'][str(self.camname)]
 
@@ -271,8 +280,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 
 		out = E200.E200_load_images(imgstr,uids)
 
-		# self.indent.level -= 1
-		logger.info('Finished loading images')
+		logger.info('UI finished loading images')
 		return out
 
 	def loadfile(self,camname=None,imgnum=1):
@@ -359,12 +367,11 @@ class ButterflyGUI(QtGui.QMainWindow):
 		logger.info('Running sim!')
 		self.ui.fitview_mpl.ax.clear()
 		self.ui.roiview_mpl.ax.clear()
-		self.rect = self.ui.imageview_mpl.rect
+		self.rect = self.ui.imageview_mpl.Rectangle
 		self.out = self.analyzefcn(
-				f        = self.infile,
 				data     = self.data,
 				camname  = self.camname,
-				imgnum   = self.imgnum,
+				# imgnum   = self.imgnum,
 				oimg     = self.oimg,
 				verbose  = False,
 				roiaxes  = self.ui.roiview_mpl.ax,
@@ -398,56 +405,19 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# =====================================
 		self.updateEmitPlot()
 
-
 		# =====================================
 		# Extract results and save
 		# =====================================
-		# Save location
-		processed = self.dataset.write_file['data']['processed']
-		vectors = processed['vectors']
-		scalars = processed['scalars']
-		arrays = processed['arrays']
-
-		# Results
-		out        = self.out
-		scanfit    = out.scanfit
-		fitresults = scanfit.fitresults
-
-		rect_arr = np.array([self.rect.get_x(),self.rect.get_y(),self.rect.get_height(),self.rect.get_width()])
-		# print rect_arr
-		logger.info('Value for rect_arr: {}'.format(rect_arr))
-
-		result_array = [
-			[scalars , 'ss_{}_emit_n'.format(self.camname)           , fitresults.emitn         ] ,
-			[scalars , 'ss_{}_betastar'.format(self.camname)         , fitresults.Beam.betastar ] ,
-			[scalars , 'ss_{}_sstar'.format(self.camname)            , fitresults.Beam.sstar    ] ,
-			[vectors , 'ss_{}_energy_axis'.format(self.camname)      , out.eaxis                ] ,
-			[vectors , 'ss_{}_variance'.format(self.camname)         , out.variance             ] ,
-			[vectors , 'ss_{}_LLS_beta'.format(self.camname)         , fitresults.beta          ] ,
-			[arrays  , 'ss_{}_LLS_X_unweighted'.format(self.camname) , fitresults.X_unweighted  ] ,
-			[vectors , 'ss_{}_LLS_y_error'.format(self.camname)      , fitresults.y_error       ] ,
-			[vectors , 'ss_{}_rect'.format(self.camname)             , rect_arr                 ] ,
-			[arrays  , 'ss_{}_image'.format(self.camname)            , self.oimg                ]
-			]
-
-		# Write results to file
-		for pair in result_array:
-			logger.debug('Writing to group {}...'.format(pair[1]))
-			try:
-				self._write_result(pair[0],pair[1],uid,pair[2])
-			except:
-				logger.error('Error on saving group {} with value: {}'.format(pair[1],pair[2]))
-				# print 'Error on saving group {} with value:'.format(pair[1])
-				# print pair[2]
-				raise
-
-		logger.debug('Finished writing')
-
-	def _write_result(self,group,name,uid,value):
-		E200.E200_create_data(group,name)
-		E200.E200_api_updateUID(group[name],UID=uid,value=value)
-
-		group.file.flush()
+		rect = self.rect
+		rect_arr = np.array([rect.get_x(),rect.get_y(),rect.get_width(),rect.get_height()])
+		self.savefcn(
+				dataset     = self.dataset ,
+				analyze_out = self.out     ,
+				rect_arr    = rect_arr     ,
+				camname     = self.camname ,
+				oimg        = self.oimg    ,
+				uid         = uid
+				)
 
 	def updateEmitPlot(self):
 		validresults = self.fitresults[self.validimg]

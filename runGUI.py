@@ -13,38 +13,13 @@ import mytools as mt
 import numpy as np
 from ButterflyGUI import ButterflyGUI
 from analyze_matlab import analyze_matlab
+from save_analysis import save_analysis
 
 def runGUI(filename,camname,imgnum,verbose=False,loglevel=0):
 	# ======================================
 	# Set up logging
 	# ======================================
-	logger = logging.getLogger()
-	logger.setLevel(logging.DEBUG)
-
-	fmtr = mt.classes.IndentFormatter(indent_offset=8)
-	fmtr_msgonly = mt.classes.IndentFormatter('%(indent)s%(message)s')
-
-	debugh = logging.FileHandler(filename='debug.log',mode='w')
-	debugh.setLevel(logging.ERROR)
-	debugh.setFormatter(fmtr_msgonly)
-	logger.addHandler(debugh)
-
-	ch = logging.StreamHandler()
-	if loglevel == 'debug':
-		ch.setLevel(logging.DEBUG)
-	elif loglevel == 'info':
-		ch.setLevel(logging.INFO)
-	elif loglevel == 'warning':
-		ch.setLevel(logging.WARNING)
-	elif loglevel == 'critical':
-		ch.setLevel(logging.CRITICAL)
-	ch.setFormatter(fmtr_msgonly)
-	logger.addHandler(ch)
-
-	fh = logging.FileHandler(filename='runGUI.log',mode='w')
-	fh.setLevel(logging.DEBUG)
-	fh.setFormatter(fmtr)
-	logger.addHandler(fh)
+	logger = mt.mylogger(filename='runGUI')
 
 	# ======================================
 	# Load data and run program
@@ -55,7 +30,14 @@ def runGUI(filename,camname,imgnum,verbose=False,loglevel=0):
 	# Generate or retrieve qt app
 	app = mt.qt.get_app()
 
-	window = ButterflyGUI(analyze_matlab,data,camname,imgnum,verbose=verbose)
+	window = ButterflyGUI(
+			analyzefcn = analyze_matlab ,
+			savefcn    = save_analysis  ,
+			dataset    = data           ,
+			camname    = camname        ,
+			imgnum     = imgnum         ,
+			verbose    = verbose
+			)
 	# img = np.random.randn(10,10)
 	# window = ButterflyGUI(analyze_matlab,image=img)
 	# window.ui.imageview_mpl.img.image=img

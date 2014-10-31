@@ -1,44 +1,68 @@
 #!/usr/bin/env python
-import logging
-logger=logging.getLogger(__name__)
 
 import ButterflyEmittancePython as bt
 import E200
 import argparse
 import copy
 import h5py as h5
+import inspect
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import mytools as mt
 import numpy as np
 import scipy.io as sio
 import slactrac as sltr
+import pdb
+
+import logging
+# loggerlevel = logging.DEBUG
+loggerlevel = 9
+logger=logging.getLogger(__name__)
 
 class AnalysisResults(mt.classes.Keywords):
 	pass
 
 def analyze_matlab(
-		f        = None,
-		data     = None,
-		camname  = None,
-		imgnum   = None,
-		oimg     = None,
-		rect     = None,
-		fitpts   = None,
-		roiaxes  = None,
-		plotaxes = None,
-		verbose  = True,
+		data     = None  ,
+		camname  = None  ,
+		oimg     = None  ,
+		rect     = None  ,
+		fitpts   = None  ,
+		roiaxes  = None  ,
+		plotaxes = None  ,
+		verbose  = False ,
 		uid      = None
 		):
 
 	plt.close()
+	# ======================================
+	# Log inputs
+	# ======================================
+	frame = inspect.currentframe()
+	args, temp, temp, values = inspect.getargvalues(frame)
+	
+	logger.log(level=1,msg='Input values:')
+	for i,arg in enumerate(args):
+		# pdb.set_trace()
+		logger.log(level=1,msg='Arg name: {}, arg value: {}'.format(arg,values[arg]))
+
+	logger.log(level=1,msg='Rectangle: x0: {}, y0: {}, x1: {}, y1: {}, width: {}, height: {}'.format(
+		rect.x0           ,
+		rect.y0           ,
+		rect.x1           ,
+		rect.y1           ,
+		rect.get_width()  ,
+		rect.get_height()
+		)
+		)
 	
 	# ======================================
 	# Load and transfer matlab variables
 	# ======================================
-	if (f is None):
-		infile     = 'forpython.mat'
-		f          = h5.File(infile);
+	# if (f is None):
+	#         infile     = 'forpython.mat'
+	#         f          = h5.File(infile);
+	f = data.file
 
 	if data is None:
 		data       = f['data']
@@ -47,8 +71,8 @@ def analyze_matlab(
 		camname = f['camname']
 		camname = mt.derefstr(camname)
 
-	if imgnum is None:
-		imgnum = f['imgnum'][0,0]
+	# if imgnum is None:
+	#         imgnum = f['imgnum'][0,0]
 
 	imgstr = data['raw']['images'][str(camname)]
 	res    = imgstr['RESOLUTION'][0,0]
@@ -62,8 +86,8 @@ def analyze_matlab(
 	setQS_str  = scalars_rf['step_value']
 	setQS_dat  = E200.E200_api_getdat(setQS_str,uid).dat[0]
 	setQS = mt.hardcode.setQS(setQS_dat)
-	logger.error('setQS_dat is: {}'.format(setQS_dat))
-	logger.error('setQS_dat type is: {}'.format(type(setQS_dat)))
+	logger.info('setQS_dat is: {}'.format(setQS_dat))
+	# logger.debug('setQS_dat type is: {}'.format(type(setQS_dat)))
 	
 	# ======================================
 	# Bend magnet strength
@@ -85,11 +109,10 @@ def analyze_matlab(
 		ystart = 1870
 		ystop  = 1900
 	else:
-		betterRect = mt.Rectangle(rect)
-		xstart = betterRect.x0
-		xstop  = betterRect.x1
-		ystart = betterRect.y0
-		ystop  = betterRect.y1
+		xstart = rect.y0
+		xstop  = rect.y1
+		ystart = rect.x0
+		ystop  = rect.x1
 
 		xstart = np.round(xstart)
 		xstop  = np.round(xstop)
@@ -99,9 +122,9 @@ def analyze_matlab(
 	# ======================================
 	# Get image
 	# ======================================
-	if oimg is None:
-		oimg = E200.E200_load_images(imgstr,f)
-		oimg = oimg.image[imgnum-1,:,:]
+	# if oimg is None:
+	#         oimg = E200.E200_load_images(imgstr,f)
+	#         oimg = oimg.image[imgnum-1,:,:]
 	# oimg=np.fliplr(oimg)
 
 	img = oimg[xstart:xstop,ystart:ystop]
@@ -118,7 +141,7 @@ def analyze_matlab(
 	x_pix     = np.round(mt.linspacestep(xstart,xstop-1,1))
 	x_meter   = (x_pix-np.mean(x_pix)) * res
 	if camname == 'ELANEX':
-		logger.debug('Lanex is tipped at 45 degrees: dividing x axis by sqrt(2)')
+		logger.log(level=logging.INFO,msg='Lanex is tipped at 45 degrees: dividing x axis by sqrt(2)')
 		x_meter = x_meter/np.sqrt(2)
 	x_sq      = x_meter**2
 	
@@ -157,10 +180,10 @@ def analyze_matlab(
 		ymotor=mt.derefdataset(ymotor,f)
 		ymotor=ymotor[0]*1e-3
 		# print 'Ymotor is {}'.format(ymotor)
-		logger.error('Original ymotor is: {}'.format(ymotor))
+		logger.log(level=loggerlevel,msg='Original ymotor is: {}'.format(ymotor))
 
 		ymotor=setQS.elanex_y_motor()*1e-3
-		logger.error('Reconstructed ymotor is: {ymotor}'.format(ymotor=ymotor))
+		logger.log(level=loggerlevel,msg='Reconstructed ymotor is: {ymotor}'.format(ymotor=ymotor))
 	else:
 		ymotor=None
 
@@ -189,8 +212,8 @@ def analyze_matlab(
 	QS1_K1 = setQS.QS1.K1
 	QS2_K1 = setQS.QS2.K1
 
-	logger.error('QS1_K1 is: {}'.format(QS1_K1))
-	logger.error('QS2_K1 is: {}'.format(QS2_K1))
+	logger.log(level=loggerlevel,msg='QS1_K1 is: {}'.format(QS1_K1))
+	logger.log(level=loggerlevel,msg='QS2_K1 is: {}'.format(QS2_K1))
 
 	# ======================================
 	# Create beamlines
