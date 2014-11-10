@@ -107,7 +107,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 	def saverect(self,rect):
 		ind = self.ui.imagenum_slider.value-1
 		uid = self.allimgs.uid[ind]
-		uid = uid[0]
+		# uid = uid[0]
 		# print 'UID to save: {:0.0f}'.format(uid)
 		processed = self.dataset.write_file['data']['processed']
 		vectors = processed['vectors']
@@ -173,7 +173,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		uid = self.allimgs.uid[self.imgnum-1]
 		# Print all UIDs
-		uid = uid[0]
+		# uid = uid[0]
 		logger.debug('UID type is: {}'.format(type(uid)))
 		logger.debug('Opening UID: {:0.0f}'.format(uid))
 		rect = self.ui.imageview_mpl.Rectangle
@@ -357,7 +357,7 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# =====================================
 		ind = self.ui.imagenum_slider.value-1
 		uid = self.allimgs.uid[ind]
-		uid = uid[0]
+		# uid = uid[0]
 		logger.debug('UID is {}'.format(uid))
 
 		# =====================================

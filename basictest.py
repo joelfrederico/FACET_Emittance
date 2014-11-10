@@ -22,7 +22,7 @@ except:
 # Diagnose set A
 # ======================================
 set_a        = ['20140625','13438']
-emit_n_str_a = 'ss_ELANEX_energy_axis'
+emit_n_str_a = 'ss_ELANEX_emit_n'
 
 setdate     = set_a[0]
 setnumber   = set_a[1]
@@ -34,14 +34,16 @@ vectors_a   = processed_a['vectors']
 arrays_a    = processed_a['arrays']
 scalars_a   = processed_a['scalars']
 
-emit_n_a_str = vectors_a[emit_n_str_a]
+emit_n_a_str = scalars_a[emit_n_str_a]
 emit_n_a     = E200.E200_api_getdat(emit_n_a_str)
+print emit_n_a.UID
+emit_n_a     = E200.E200_api_getdat(emit_n_a_str,emit_n_a.UID[0])
 
 # ======================================
 # Diagnose set B
 # ======================================
-set_b        = ['20140625','13450']
-emit_n_str_b = 'ss_CMOS_FAR_energy_axis'
+set_b        = ['20140629','13537']
+emit_n_str_b = 'ss_ELANEX_emit_n'
 
 setdate     = set_b[0]
 setnumber   = set_b[1]
@@ -53,5 +55,6 @@ vectors_b   = processed_b['vectors']
 arrays_b    = processed_b['arrays']
 scalars_b   = processed_b['scalars']
 
-emit_n_b_str = vectors_b[emit_n_str_b]
-emit_n_b = E200.E200_api_getdat(emit_n_b_str)
+emit_n_b_str = scalars_b[emit_n_str_b]
+emit_n_b     = E200.E200_api_getdat(emit_n_b_str)
+emit_n_b     = E200.E200_api_getdat(emit_n_b_str,emit_n_b.UID[0])

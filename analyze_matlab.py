@@ -262,18 +262,18 @@ def analyze_matlab(
 	# ======================================
 	mpl.rcParams.update({'font.size':12})
 
-	bt.plotfit(eaxis,
-			variance,
-			scanresults.fitresults.beta,
-			scanresults.fitresults.X_unweighted,
-			top='Emittance/Twiss Fit to Witness Butterfly',
-			# top='Emittance and Beam Parameter Fit\nto Ionization-Injected Witness Bunch',
-			figlabel='Butterfly Fit',
-			bottom='Energy [GeV]',
-			axes = plotaxes,
-			error=used_error
-			)
-	plt.show()
+	# bt.plotfit(eaxis,
+	# 		variance,
+	# 		scanresults.fitresults.beta,
+	# 		scanresults.fitresults.X_unweighted,
+	# 		top='Emittance/Twiss Fit to Witness Butterfly',
+	# 		# top='Emittance and Beam Parameter Fit\nto Ionization-Injected Witness Bunch',
+	# 		figlabel='Butterfly Fit',
+	# 		bottom='Energy [GeV]',
+	# 		axes = plotaxes,
+	# 		error=used_error
+	# 		)
+	# plt.show()
 
 	out = AnalysisResults(
 			gaussfits = gaussresults,

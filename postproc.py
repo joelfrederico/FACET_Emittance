@@ -16,12 +16,13 @@ import logging
 # except:
 #         pass
 
-# sets = [['20140625','13438'],
-#         ['20140625','13449'],
-#         ['20140629','13537']]
+sets = [['20140625','13438'],
+	# ['20140625','13449'],
+	['20140629','13537'],
+	['20140625','13450']]
 # sets = [['20140625','13438'],
 # sets = [['20140629','13537']]
-sets = [['20140625','13450']]
+# sets = [['20140625','13450']]
 
 # ======================================
 # Set up logging
@@ -44,10 +45,11 @@ for pair in sets:
 	scalars   = processed['scalars']
 
 	# camname_list = E200_get_data_cam(scalars)
-	camnames = E200_api_getdat(arrays['ss_camname'])
+	camnames = E200.E200_api_getdat(arrays['ss_camname'])
+	camnamelist = np.unique(camnames.dat)
 
-	for camname in camname_list:
-		camname = 'CMOS_FAR'
+	for camname in camnamelist:
+		# camname = 'CMOS_FAR'
 		head_str = 'ss_{}_'.format(camname)
 	
 		energy_axis_str = vectors['{}energy_axis'.format(head_str)]
@@ -58,23 +60,9 @@ for pair in sets:
 	
 			energy_axis          = E200.E200_api_getdat(energy_axis_str,uid).dat[0]
 
-			variance_str         = vectors['{}variance'.format(head_str)]
-			variance             = E200.E200_api_getdat(variance_str,uid).dat[0]
-
-			LLS_beta_str         = vectors['{}LLS_beta'.format(head_str)]
-			LLS_beta             = E200.E200_api_getdat(LLS_beta_str,uid).dat[0]
-
-			LLS_X_unweighted_str = arrays['{}LLS_X_unweighted'.format(head_str)]
-			LLS_X_unweighted     = E200.E200_api_getdat(LLS_X_unweighted_str,uid).dat[0]
-
-			LLS_y_error_str      = vectors['{}LLS_y_error'.format(head_str)]
-			LLS_y_error          = E200.E200_api_getdat(LLS_y_error_str,uid).dat[0]
-
-			image_str            = arrays['{}image'.format(head_str)]
-			image                = E200.E200_api_getdat(image_str,uid).dat[0]
-
-			rect_str             = vectors['{}rect'.format(head_str)]
-			rect                 = E200.E200_api_getdat(rect_str,uid).dat[0]
+			# ======================================
+			# Scalars
+			# ======================================
 
 			emit_n_str           = scalars['{}emit_n'.format(head_str)]
 			emit_n               = E200.E200_api_getdat(emit_n_str,uid).dat[0]
@@ -84,6 +72,36 @@ for pair in sets:
 
 			sstar_str            = scalars['{}sstar'.format(head_str)]
 			sstar                = E200.E200_api_getdat(sstar_str,uid).dat[0]
+
+			img_max_str          = scalars['{}img_max'.format(head_str)]
+			img_max              = E200.E200_api_getdat(img_max_str,uid).dat[0]
+
+			# ======================================
+			# Vectors
+			# ======================================
+
+			variance_str         = vectors['{}variance'.format(head_str)]
+			variance             = E200.E200_api_getdat(variance_str,uid).dat[0]
+
+			LLS_beta_str         = vectors['{}LLS_beta'.format(head_str)]
+			LLS_beta             = E200.E200_api_getdat(LLS_beta_str,uid).dat[0]
+
+			LLS_y_error_str      = vectors['{}LLS_y_error'.format(head_str)]
+			LLS_y_error          = E200.E200_api_getdat(LLS_y_error_str,uid).dat[0]
+
+			rect_str             = vectors['{}rect'.format(head_str)]
+			rect                 = E200.E200_api_getdat(rect_str,uid).dat[0]
+
+
+			# ======================================
+			# Arrays
+			# ======================================
+
+			LLS_X_unweighted_str = arrays['{}LLS_X_unweighted'.format(head_str)]
+			LLS_X_unweighted     = E200.E200_api_getdat(LLS_X_unweighted_str,uid).dat[0]
+
+			image_str            = arrays['{}image'.format(head_str)]
+			image                = E200.E200_api_getdat(image_str,uid).dat[0]
 
 			quadval_str          = data.read_file['data']['raw']['scalars']['step_value']
 			quadval              = E200.E200_api_getdat(quadval_str,uid).dat[0]
@@ -102,7 +120,7 @@ for pair in sets:
 					axes  = ax
 					)
 		
-			filename = '{uid:0.0f}/{head_str}min_set_{setnumber}_UID_{uid:0.0f}'.format(setnumber=setnumber,uid=uid,head_str=head_str)
+			filename = '{camname}/{uid:0.0f}/{head_str}min_set_{setnumber}_UID_{uid:0.0f}'.format(camname=camname,setnumber=setnumber,uid=uid,head_str=head_str)
 			mt.graphics.savefig(filename,fig=fig)
 		
 			# plt.close(fig)
@@ -112,12 +130,12 @@ for pair in sets:
 			# ======================================
 			fig = plt.figure()
 			ax = fig.add_subplot(1,1,1)
-			ax.imshow(image)
+			im=ax.imshow(image,vmin=0,vmax=img_max)
 		
 			# Get roi stuff
 			rect_xy = rect[0:2]
-			height  = rect[2]
-			width   = rect[3]
+			width   = rect[2]
+			height  = rect[3]
 		
 			p = mpl.patches.Rectangle(rect_xy,width,height,facecolor='w',edgecolor='r',alpha=0.5)
 		
@@ -131,10 +149,12 @@ for pair in sets:
 					ylabel='X',
 					axes=ax
 					)
+
+			plt.colorbar(mappable=im,ax=ax)
 		
 			fig.tight_layout()
 		
-			filename = '{uid:0.0f}/{head_str}image_set_{setnumber}_UID_{uid:0.0f}'.format(uid=uid,setnumber=setnumber,head_str=head_str)
+			filename = '{camname}/{uid:0.0f}/{head_str}image_set_{setnumber}_UID_{uid:0.0f}'.format(camname=camname,uid=uid,setnumber=setnumber,head_str=head_str)
 			mt.graphics.savefig(filename,fig=fig,ext='jpg',dpi=300)
 		
 			# plt.close(fig)
@@ -174,7 +194,7 @@ for pair in sets:
 		
 			tablestr=''.join([table_begin,table_mid,table_end])
 			
-			filename = 'figs/{uid:0.0f}/{head_str}table_dataset_{setnumber}_UID_{uid:0.0f}.pdf'.format(head_str=head_str,uid=uid,setnumber=setnumber)
+			filename = 'figs/{camname}/{uid:0.0f}/{head_str}table_dataset_{setnumber}_UID_{uid:0.0f}.pdf'.format(camname=camname,head_str=head_str,uid=uid,setnumber=setnumber)
 		
 			mt.graphics.latexfig(tablestr,filename=filename,environment='tabular',env_curly=env_curly)
 
@@ -206,7 +226,7 @@ UID & \multicolumn{4}{c}{Fit Info} \\
 		
 			tablestr=''.join([table_begin,table_mid,table_end])
 			
-			filename = 'figs/{uid:0.0f}/{head_str}table_fitinfo_{setnumber}_UID_{uid:0.0f}.pdf'.format(head_str=head_str,uid=uid,setnumber=setnumber)
+			filename = 'figs/{camname}/{uid:0.0f}/{head_str}table_fitinfo_{setnumber}_UID_{uid:0.0f}.pdf'.format(camname=camname,head_str=head_str,uid=uid,setnumber=setnumber)
 		
 			mt.graphics.latexfig(tablestr,filename=filename,environment='tabular',env_curly=env_curly)
 			# data.close()

@@ -33,16 +33,17 @@ def save_analysis(
 	logger.info('Value for rect_arr: {}'.format(rect_arr))
 
 	result_array = [
-		[arrays  , 'ss_camname'                             , camname                  ] ,
-		[scalars , 'ss_{}_emit_n'.format(camname)           , fitresults.emitn         ] ,
 		[scalars , 'ss_{}_betastar'.format(camname)         , fitresults.Beam.betastar ] ,
+		[scalars , 'ss_{}_emit_n'.format(camname)           , fitresults.emitn         ] ,
+		[scalars , 'ss_{}_img_max'.format(camname)          , analyze_out.img.max()    ] ,
 		[scalars , 'ss_{}_sstar'.format(camname)            , fitresults.Beam.sstar    ] ,
-		[vectors , 'ss_{}_energy_axis'.format(camname)      , out.eaxis                ] ,
-		[vectors , 'ss_{}_variance'.format(camname)         , out.variance             ] ,
 		[vectors , 'ss_{}_LLS_beta'.format(camname)         , fitresults.beta          ] ,
-		[arrays  , 'ss_{}_LLS_X_unweighted'.format(camname) , fitresults.X_unweighted  ] ,
 		[vectors , 'ss_{}_LLS_y_error'.format(camname)      , fitresults.y_error       ] ,
+		[vectors , 'ss_{}_energy_axis'.format(camname)      , out.eaxis                ] ,
 		[vectors , 'ss_{}_rect'.format(camname)             , rect_arr                 ] ,
+		[vectors , 'ss_{}_variance'.format(camname)         , out.variance             ] ,
+		[arrays  , 'ss_camname'                             , camname                  ] ,
+		[arrays  , 'ss_{}_LLS_X_unweighted'.format(camname) , fitresults.X_unweighted  ] ,
 		[arrays  , 'ss_{}_image'.format(camname)            , oimg                     ]
 		]
 
@@ -60,7 +61,7 @@ def save_analysis(
 			group.file.flush()
 			#  _write_result(pair[0],pair[1],uid,pair[2])
 		except:
-			logger.critical('Error on saving group {} with value: {}'.format(pair[1],pair[2]))
+			logger.critical('Error on saving group {} with value: {}, type: {}'.format(pair[1],pair[2],type(pair[2])))
 			raise
 
 	logger.debug('Finished saving')

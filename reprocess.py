@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import pdb
+
 import ButterflyEmittancePython as bt
 import E200
 import h5py as h5
@@ -55,10 +57,10 @@ for pair in sets:
 		logger.debug('Loaded camname: {camname}, UID: {uid}'.format(camname=camname,uid=uid))
 
 		oimg         = E200.E200_api_getdat(arrays_wf['{}image'.format(head_str)],uid)
-		oimg         = oimg.dat[0][0]
+		oimg         = oimg.dat[0]
 		rect_vec_str = E200.E200_api_getdat(vectors_wf['{}rect'.format(head_str)],uid)
-		rect_vec     = rect_vec_str.dat[0][0]
-
+		rect_vec     = rect_vec_str.dat[0]
+		
 		rect = mt.qt.Rectangle(*rect_vec)
 
 		logger.debug('Re-analyzing...')
@@ -79,3 +81,20 @@ for pair in sets:
 				oimg        = oimg     ,
 				uid         = uid
 				)
+
+# if __name__ == '__main__':
+# 	parser=argparse.ArgumentParser(description='Loads and runs a gui to analyze saved spectrometer data.')
+# 	parser.add_argument('-v','--verbose',action='store_true',
+# 			help='enable verbose mode')
+# 	parser.add_argument('-l','--log',default='info',choices=['debug','info','warning','error','critical'],
+# 			help='increase logging level')
+# 	parser.add_argument('-f','--file',
+# 			help='file to process')
+# 	parser.add_argument('-c','--camera',
+# 			help='camera name')
+# 	parser.add_argument('-i','--imgnum',type=int,
+# 			help='image number')
+# 
+# 	arg=parser.parse_args()
+# 
+# 	runGUI(arg.file,arg.camera,arg.imgnum,verbose=arg.verbose,loglevel=arg.log)
