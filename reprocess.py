@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#!/usr/bin/env python #-m pdb
+#  import signal
+#  signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 import pdb
 
@@ -6,7 +9,6 @@ import ButterflyEmittancePython as bt
 import E200
 import h5py as h5
 import inspect
-import logging
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import mytools as mt
@@ -30,13 +32,13 @@ sets = [
 #  sets = [['20140625','13450']]
 
 logger = mt.mylogger(filename='reprocess')
+logger.debug('Beginning reprocessing...')
 
 for pair in sets:
 	setdate=pair[0]
 	setnumber=pair[1]
 
 	loadfile     = 'nas/nas-li20-pm00/E200/2014/{}/E200_{}'.format(setdate,setnumber)
-	logger.debug('test')
 	data         = E200.E200_load_data(loadfile)
 	wf           = data.write_file
 	data_wf      = wf['data']

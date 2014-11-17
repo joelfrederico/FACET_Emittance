@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -m pdb
 
 from PyQt4 import QtGui,QtCore
 import ButterflyEmittancePython as bt
@@ -16,7 +16,6 @@ try:
 	data_b.close()
 except:
 	pass
-
 
 # ======================================
 # Diagnose set A
