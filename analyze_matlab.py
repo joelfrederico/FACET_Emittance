@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import ButterflyEmittancePython as bt
 import E200
 import argparse
@@ -15,8 +13,8 @@ import slactrac as sltr
 import pdb
 
 import logging
-# loggerlevel = logging.DEBUG
-loggerlevel = 9
+loggerlevel = logging.DEBUG
+# loggerlevel = 9
 logger=logging.getLogger(__name__)
 
 class AnalysisResults(mt.classes.Keywords):
@@ -180,18 +178,24 @@ def analyze_matlab(
 		ymotor=mt.derefdataset(ymotor,f)
 		ymotor=ymotor[0]*1e-3
 		# print 'Ymotor is {}'.format(ymotor)
-		logger.log(level=loggerlevel,msg='Original ymotor is: {}'.format(ymotor))
-
+		logger.log(level=loggerlevel,msg='First: Original ymotor is: {}'.format(ymotor))
+	
 		ymotor=setQS.elanex_y_motor()*1e-3
-		logger.log(level=loggerlevel,msg='Reconstructed ymotor is: {ymotor}'.format(ymotor=ymotor))
+		logger.log(level=loggerlevel,msg='First: Reconstructed ymotor is: {ymotor}'.format(ymotor=ymotor))
 	else:
 		ymotor=None
+	# eaxis     = E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
 
-	eaxis     = E200.eaxis(camname=camname,y=y,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	# eaxis     = E200.eaxis(y=y,camname=camname,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	eaxis     = E200.eaxis(y=y,uid=uid,camname=camname,hdf5_data=data)
+
 	yimg      = mt.linspacestep(1,img.shape[1])
-	imgeaxis  = E200.eaxis(camname=camname,y=yimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	# imgeaxis  = E200.eaxis(camname=camname,y=yimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	imgeaxis  = E200.eaxis(y=yimg,uid=uid,camname=camname,hdf5_data=data)
+
 	yoimg     = mt.linspacestep(1,oimg.shape[1])
-	oimgeaxis = E200.eaxis(camname=camname,y=yoimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	# oimgeaxis = E200.eaxis(camname=camname,y=yoimg,res=res,E0=20.35,etay=0,etapy=0,ymotor=ymotor)
+	oimgeaxis = E200.eaxis(y=yoimg,uid=uid,camname=camname,hdf5_data=data)
 	
 	# ======================================
 	# Default Twiss and beam params

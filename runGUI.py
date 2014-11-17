@@ -1,4 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python #-m pdb
+
+# import sys
+# from IPython.core import ultratb
+# sys.excepthook = ultratb.FormattedTB(mode='Verbose',
+# color_scheme='Linux', call_pdb=1)
+
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
