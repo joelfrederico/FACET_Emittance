@@ -18,6 +18,7 @@ import logging
 logger = mt.mylogger(filename='compare_SCorde')
 
 filebase = 'E200_13450'
+filebase = 'E200_13438'
 filename = '{}.mat'.format(filebase)
 
 f = scipy.io.loadmat(filename)
@@ -140,6 +141,12 @@ myenergy = E200.eaxis(y=y_scorde, uid=uid_scorde[0], camname=camname, hdf5_data=
 fig_en = plt.figure()
 mygs = gs.GridSpec(1,1)
 ax1 = fig_en.add_subplot(mygs[0])
-ax1.plot(y_scorde,energy_scorde,'b',y_scorde,myenergy,'r')
+plots=ax1.plot(y_scorde,energy_scorde,'b',y_scorde,myenergy,'r')
+plots[0].set_label('Sebastien')
+plots[1].set_label('Joel')
+ax1.legend()
+#  ax1.set_yscale('log')
+
+mt.addlabel(toplabel=camname,xlabel='Pixels',ylabel='Energy [GeV]',axes=ax1)
 
 plt.show()
