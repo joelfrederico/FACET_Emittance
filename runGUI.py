@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 #!/usr/bin/env python #-m pdb
 
-# import sys
-# from IPython.core import ultratb
-# sys.excepthook = ultratb.FormattedTB(mode='Verbose',
-# color_scheme='Linux', call_pdb=1)
+import sys
+from IPython.core import ultratb
+sys.excepthook = ultratb.FormattedTB(mode='Verbose',
+color_scheme='Linux', call_pdb=1)
 
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -31,7 +32,7 @@ def runGUI(filename,camname,imgnum,verbose=False,loglevel=0):
 	# Load data and run program
 	# ======================================
 
-	data=E200.E200_load_data(filename)
+	data=E200.E200_load_data(filename,local=True)
 	
 	# Generate or retrieve qt app
 	app = mt.qt.get_app()

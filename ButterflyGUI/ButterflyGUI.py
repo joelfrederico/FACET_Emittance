@@ -159,10 +159,19 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# self.indent.level +=1
 
 		# ======================================
+		# Get uid
+		# ======================================
+		uid = self.allimgs.uid[self.imgnum-1]
+
+		# ======================================
 		# Open the right image for viewing
 		# ======================================
 		imgstr = self.data['raw']['images'][str(self.camname)]
-		self.oimg   = self.allimgs.images[self.imgnum-1]
+                #  self.oimg   = self.allimgs.images[self.imgnum-1]
+
+                cur_img = E200.E200_load_images(imgstr,uid)
+                self.oimg = cur_img.images[0]
+
 		if self.camname=='ELANEX':
 			self.oimg = np.rot90(self.oimg)
 		self.ui.imageview_mpl.image = self.oimg
@@ -170,7 +179,6 @@ class ButterflyGUI(QtGui.QMainWindow):
 		# ======================================
 		# See if rect info is stored for a UID
 		# ======================================
-		uid = self.allimgs.uid[self.imgnum-1]
 		# Print all UIDs
 		# uid = uid[0]
 		logger.debug('UID type is: {}'.format(type(uid)))
@@ -277,7 +285,8 @@ class ButterflyGUI(QtGui.QMainWindow):
 		uids = imgstr['UID']
 		logger.debug('Number of images requested: {}'.format(uids.shape[0]))
 
-		out = E200.E200_load_images(imgstr,uids)
+                #  out = E200.E200_load_images(imgstr,uids)
+		out = E200.E200_api_getdat(imgstr,UID=uids)
 
 		logger.info('UI finished loading images')
 		return out
