@@ -31,7 +31,7 @@ cam     = f[filebase][camname][0,0]
 # ======================================
 # Get Sebastien's emittance, UID
 # ======================================
-uid_scorde      = cam['UID'][0,0].flatten()
+uid_scorde      = np.uint64(cam['UID'][0,0].flatten())
 emit_n_scorde   = cam['norm_emittance'][0,0].flatten() * 1e-6
 betastar_scorde = cam['beta_star'][0,0].flatten()
 sstar_scorde    = cam['s_star'][0,0].flatten()
@@ -128,6 +128,7 @@ elif camname == 'CMOS_FAR':
 	y_scorde,energy_scorde = ce.Energy_Axis_CMOS_FAR(13450,1.5)
 else:
 	raise NotImplementedError('Camera name is not available: {}'.format(camname))
+energy_scorde = np.flipud(energy_scorde)
 
 # ======================================
 # Get my energy
@@ -136,15 +137,16 @@ else:
 rf = data.read_file
 data_rf = rf['data']
 
-myenergy = E200.eaxis(y=y_scorde, uid=uid_scorde[0], camname=camname, hdf5_data=data_rf, E0=20.35, etay=0, etapy=0)
+myenergy,myenergy_approx = E200.eaxis(y=y_scorde, uid=uid_scorde[0], camname=camname, hdf5_data=data_rf, E0=20.35, etay=0, etapy=0)
 
 fig_en = plt.figure()
 mygs = gs.GridSpec(1,1)
 ax1 = fig_en.add_subplot(mygs[0])
-plots=ax1.plot(y_scorde,energy_scorde,'b',y_scorde,myenergy,'r')
-plots[0].set_label('Sebastien')
-plots[1].set_label('Joel')
-ax1.legend()
+#  plots=ax1.plot(y_scorde,energy_scorde,'b',y_scorde,myenergy_approx,'r')
+plots=ax1.plot(y_scorde,energy_scorde-myenergy,'g')
+#  plots[0].set_label('Sebastien')
+#  plots[1].set_label('Joel')
+#  ax1.legend()
 #  ax1.set_yscale('log')
 
 mt.addlabel(toplabel=camname,xlabel='Pixels',ylabel='Energy [GeV]',axes=ax1)
