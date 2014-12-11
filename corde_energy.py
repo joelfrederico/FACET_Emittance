@@ -97,7 +97,7 @@ def Energy_Axis_CMOS_FAR(dataset, QS):
 	elif dataset == 13448 or dataset == 13449:
 		y0    = np.float128(1605.5) - np.float128(0.7923)*(E0+QS)  # y0 is adjusted to account for QS dispersion.
 		eta_0 = np.float128(949.72) + np.float128(0.7923)*(E0+QS)  # added QS dispersion of 0.7923 pix per QS GeV.
-			
+	
 	elif dataset == 13450:
 		y0    = np.float128(1655)   - np.float128(3.321)*(E0+QS) # y0 is adjusted to account for QS dispersion.
 		eta_0 = np.float128(949.72) + np.float128(3.321)*(E0+QS) # added QS dispersion of 3.321 pix per QS GeV.
