@@ -13,8 +13,8 @@ import slactrac as sltr
 import pdb
 
 import logging
-loggerlevel = logging.DEBUG
-# loggerlevel = 9
+#  loggerlevel = logging.DEBUG
+loggerlevel = 9
 logger=logging.getLogger(__name__)
 
 class AnalysisResults(mt.classes.Keywords):
@@ -234,12 +234,16 @@ def analyze_matlab(
                 QS1_K1 = QS1_K1,
                 QS2_K1 = QS2_K1
                 )
+        #  from PyQt4.QtCore import pyqtRemoveInputHook
+        #  pyqtRemoveInputHook()
+        #  pdb.set_trace()
     else:
         beamline=bt.beamlines.IP_to_cherfar(
                 beam_x=twiss,beam_y=twiss,
                 QS1_K1 = QS1_K1,
                 QS2_K1 = QS2_K1
                 )
+
 
     beamline_array = np.array([])
     for i,value in enumerate(eaxis):

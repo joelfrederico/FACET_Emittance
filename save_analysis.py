@@ -1,17 +1,19 @@
 import logging
 logger=logging.getLogger(__name__)
 loggerlevel=logging.DEBUG
+#  loggerlevel = logging.CRITICAL
 
 import E200
 import numpy as np
 
 def save_analysis(
-        dataset     ,
-        analyze_out ,
-        rect_arr    ,
-        camname     ,
-        oimg        ,
-        uid
+        dataset      ,
+        analyze_out  ,
+        rect_arr     ,
+        camname      ,
+        oimg         ,
+        uid          ,
+        valid = False,
         ):
     # =====================================
     # Extract results and save
@@ -44,7 +46,9 @@ def save_analysis(
         [vectors , 'ss_{}_variance'.format(camname)         , out.variance             ] ,
         [arrays  , 'ss_camname'                             , camname                  ] ,
         [arrays  , 'ss_{}_LLS_X_unweighted'.format(camname) , fitresults.X_unweighted  ] ,
-        [arrays  , 'ss_{}_image'.format(camname)            , oimg                     ]
+        [arrays  , 'ss_{}_image'.format(camname)            , oimg                     ] ,
+        [arrays  , 'ss_{}_selected_img'.format(camname)     , out.img                  ] ,
+        [scalars , 'ss_{}_valid'.format(camname)            , valid                    ]
         ]
 
     # Write results to file

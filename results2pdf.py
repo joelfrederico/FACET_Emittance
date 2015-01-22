@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pdb
 import re
 import E200
 import matplotlib.gridspec as gridspec
@@ -9,6 +10,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from laser_on_off import *
+import datetime as dt
 
 import ButterflyEmittancePython as bt
 
@@ -39,54 +41,64 @@ def get_str(drill):
 # =====================================
 # Get UIDs, energy axes, images, etc
 # =====================================
-uids = vectors_drill.ss_ELANEX_energy_axis.UID
+valid = scalars_drill.ss_ELANEX_valid
+uids = valid.UID[valid.dat==True]
+#  uids = scalars_drill.ss_ELANEX_valid.UID
 #  uids = uids[0:8]
 
-quadval_drill,quadval_str             = get_str(scalars_rdrill.step_value)
-quadval                           = E200.E200_api_getdat(quadval_str,uids)
+valid_drill,valid_str               = get_str(scalars_drill.ss_ELANEX_valid)
+valid                               = E200.E200_api_getdat(valid_str,uids)
+
+quadval_drill,quadval_str           = get_str(scalars_rdrill.step_value)
+quadval                             = E200.E200_api_getdat(quadval_str,uids)
 
 emit_n_drill,emit_n_str             = get_str(scalars_drill.ss_ELANEX_emit_n)
-emit_n                           = E200.E200_api_getdat(emit_n_str,uids)
+emit_n                              = E200.E200_api_getdat(emit_n_str,uids)
 
-betastar_drill,betastar_str             = get_str(scalars_drill.ss_ELANEX_betastar)
-betastar                           = E200.E200_api_getdat(betastar_str,uids)
+betastar_drill,betastar_str         = get_str(scalars_drill.ss_ELANEX_betastar)
+betastar                            = E200.E200_api_getdat(betastar_str,uids)
 
-sstar_drill,sstar_str             = get_str(scalars_drill.ss_ELANEX_sstar)
-sstar                           = E200.E200_api_getdat(sstar_str,uids)
+sstar_drill,sstar_str               = get_str(scalars_drill.ss_ELANEX_sstar)
+sstar                               = E200.E200_api_getdat(sstar_str,uids)
 
-rect_drill,rect_str             = get_str(vectors_drill.ss_ELANEX_rect)
-rects                           = E200.E200_api_getdat(rect_str,uids)
+rect_drill,rect_str                 = get_str(vectors_drill.ss_ELANEX_rect)
+rects                               = E200.E200_api_getdat(rect_str,uids)
 
-eaxis_drill,eaxis_str           = get_str(vectors_drill.ss_ELANEX_energy_axis)
-eaxis                           = E200.E200_api_getdat(eaxis_str,uids)
+eaxis_drill,eaxis_str               = get_str(vectors_drill.ss_ELANEX_energy_axis)
+eaxis                               = E200.E200_api_getdat(eaxis_str,uids)
 
-variance_drill,variance_str           = get_str(vectors_drill.ss_ELANEX_variance)
-variance                           = E200.E200_api_getdat(variance_str,uids)
+variance_drill,variance_str         = get_str(vectors_drill.ss_ELANEX_variance)
+variance                            = E200.E200_api_getdat(variance_str,uids)
 
-beta_drill,beta_str           = get_str(vectors_drill.ss_ELANEX_LLS_beta)
-beta                           = E200.E200_api_getdat(beta_str,uids)
+beta_drill,beta_str                 = get_str(vectors_drill.ss_ELANEX_LLS_beta)
+beta                                = E200.E200_api_getdat(beta_str,uids)
 
 y_error_drill,y_error_str           = get_str(vectors_drill.ss_ELANEX_LLS_y_error)
-y_error                           = E200.E200_api_getdat(y_error_str,uids)
+y_error                             = E200.E200_api_getdat(y_error_str,uids)
 
-X_unweighted_drill,X_unweighted_str           = get_str(arrays_drill.ss_ELANEX_LLS_X_unweighted)
-X_unweighted                           = E200.E200_api_getdat(X_unweighted_str,uids)
+X_unweighted_drill,X_unweighted_str = get_str(arrays_drill.ss_ELANEX_LLS_X_unweighted)
+X_unweighted                        = E200.E200_api_getdat(X_unweighted_str,uids)
 
-oimg_eaxis_drill,oimg_eaxis_str = get_str(vectors_drill.ss_ELANEX_oimg_eaxis)
-oimg_eaxis                      = E200.E200_api_getdat(oimg_eaxis_str,uids)
+selected_img_drill,selected_img_str = get_str(arrays_drill.ss_ELANEX_selected_img)
+selected_img                        = E200.E200_api_getdat(selected_img_str,uids)
 
-elanex_drill,elanex_str         = get_str(data.rdrill.data.raw.images.ELANEX)
-images                          = E200.E200_load_images(elanex_str,uids)
+oimg_eaxis_drill,oimg_eaxis_str     = get_str(vectors_drill.ss_ELANEX_oimg_eaxis)
+oimg_eaxis                          = E200.E200_api_getdat(oimg_eaxis_str,uids)
 
-E224_Probe_drill,E224_Probe_str         = get_str(data.rdrill.data.raw.images.E224_Probe)
+elanex_drill,elanex_str             = get_str(data.rdrill.data.raw.images.ELANEX)
+images                              = E200.E200_load_images(elanex_str,uids)
+
+E224_Probe_drill,E224_Probe_str     = get_str(data.rdrill.data.raw.images.E224_Probe)
 
 laseron = laser_on_off(E224_Probe_str,uids)
 
-num_shots = len(images)
+num_shots      = len(valid)
 slots_per_page = 5
-pages     = np.int(np.ceil(num_shots/np.float(slots_per_page)))
+pages          = np.int(np.ceil(num_shots/np.float(slots_per_page)))
 
-pdf = PdfPages('output.pdf')
+now = dt.datetime.now()
+
+pdf = PdfPages('13537_processed_{}-{}-{}_{}-{}.pdf'.format(now.month,now.day,now.year,now.hour,now.minute))
 
 # =====================================
 # Basic formatting options
@@ -101,6 +113,7 @@ fontsize=7
 for i in range(pages):
     gs = gridspec.GridSpec(5,3)
     fig = plt.figure(figsize=(8.5,11))
+    fig.suptitle('Single Shot Emittance Analysis, Dataset 13537, Page {}/{}'.format(i+1,pages))
 
     # =====================================
     # Add analysis to each slot
@@ -146,8 +159,17 @@ for i in range(pages):
             #  ax.imshow(img_to_plot,aspect=aspect,origin='lower')
             #  img = mpl.image.NonUniformImage(ax)
             #  img.set_data(e_axis,mt.linspacestep(1,x_max),img_to_plot)
-            img = mt.NonUniformImage(e_axis,mt.linspacestep(1,x_max),img_to_plot,ax=ax)
+            pixels = selected_img.dat[indx].flatten()
+            hist,edges = np.histogram(pixels,bins=50)
+            new_edges = edges[1:]
+            max_count = np.max(new_edges[hist>50])
+            img       = mt.NonUniformImage(e_axis,mt.linspacestep(1,x_max),img_to_plot,ax=ax)
+            img.set_clim([0,max_count])
             mt.addlabel(axes=ax,ylabel='Pixels',xlabel='Energy [GeV]')
+            cb=fig.colorbar(img)
+            ax.tick_params(labelsize=fontsize)
+            cb.ax.tick_params(labelsize=fontsize)
+            ax.get_figure().tight_layout()
 
             # =====================================
             # Get rectangle info
@@ -248,9 +270,10 @@ Laser & {} \\
             ax.set_frame_on(False)
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
+            ax.get_figure().tight_layout()
             
             
-    gs.tight_layout(fig)
+    gs.tight_layout(fig,rect=[0,0,1,0.95])
     pdf.savefig(fig)
     plt.close()
 

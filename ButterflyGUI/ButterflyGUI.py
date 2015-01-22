@@ -363,24 +363,24 @@ class ButterflyGUI(QtGui.QMainWindow):
         ax.figure.canvas.draw()
 
     def run_sim(self):
-        # =====================================
-        # Get UID
-        # =====================================
-        ind = self.ui.imagenum_slider.value-1
-        uid = self.allimgs.uid[ind]
-        # uid = uid[0]
-        logger.debug('UID is {}'.format(uid))
-
-        # =====================================
-        # Run the sim
-        # =====================================
-        # print 'Running sim!'
-        logger.info('Running sim!')
-        self.ui.fitview_mpl.ax.clear()
-        self.ui.roiview_mpl.ax.clear()
-        self.rect = self.ui.imageview_mpl.Rectangle
-
         try:
+            # =====================================
+            # Get UID
+            # =====================================
+            ind = self.ui.imagenum_slider.value-1
+            uid = self.allimgs.uid[ind]
+            # uid = uid[0]
+            logger.debug('UID is {}'.format(uid))
+
+            # =====================================
+            # Run the sim
+            # =====================================
+            # print 'Running sim!'
+            logger.info('Running sim!')
+            self.ui.fitview_mpl.ax.clear()
+            self.ui.roiview_mpl.ax.clear()
+            self.rect = self.ui.imageview_mpl.Rectangle
+
             self.out = self.analyzefcn(
                     data     = self.data,
                     camname  = self.camname,
@@ -392,50 +392,51 @@ class ButterflyGUI(QtGui.QMainWindow):
                     rect     = self.rect,
                     uid      = uid
                     )
+
+            # =====================================
+            # Redraw results boxes
+            # =====================================
+            self.ui.fitview_mpl.ax.figure.canvas.draw()
+            self.ui.roiview_mpl.ax.figure.canvas.draw()
+
+            # =====================================
+            # Update gaussfit slider
+            # =====================================
+            self.ui.gaussfit_slider.setMinimum(1)
+            self.ui.gaussfit_slider.setMaximum(self.out.gaussfits.shape[0])
+            self.ui.gaussfit_slider.valueChanged.connect(self.gaussfit_update)
+            self.gaussfit_update(1)
+
+            # =====================================
+            # Save results locally
+            # =====================================
+            ind = self.ui.imagenum_slider.value-1
+            self.fitresults[ind] = self.out
+
+            # =====================================
+            # Update emittance plot
+            # =====================================
+            self.updateEmitPlot()
+
+            # =====================================
+            # Extract results and save
+            # =====================================
+            rect = self.rect
+            rect_arr = np.array([rect.get_x(),rect.get_y(),rect.get_width(),rect.get_height()])
+            self.savefcn(
+                    dataset     = self.dataset ,
+                    analyze_out = self.out     ,
+                    rect_arr    = rect_arr     ,
+                    camname     = self.camname ,
+                    oimg        = self.oimg    ,
+                    uid         = uid          ,
+                    valid       = True
+                    )
         except:
             from PyQt4.QtCore import pyqtRemoveInputHook
             pyqtRemoveInputHook()
             traceback.print_exc()
             pdb.post_mortem()
-
-        # =====================================
-        # Redraw results boxes
-        # =====================================
-        self.ui.fitview_mpl.ax.figure.canvas.draw()
-        self.ui.roiview_mpl.ax.figure.canvas.draw()
-
-        # =====================================
-        # Update gaussfit slider
-        # =====================================
-        self.ui.gaussfit_slider.setMinimum(1)
-        self.ui.gaussfit_slider.setMaximum(self.out.gaussfits.shape[0])
-        self.ui.gaussfit_slider.valueChanged.connect(self.gaussfit_update)
-        self.gaussfit_update(1)
-
-        # =====================================
-        # Save results locally
-        # =====================================
-        ind = self.ui.imagenum_slider.value-1
-        self.fitresults[ind] = self.out
-
-        # =====================================
-        # Update emittance plot
-        # =====================================
-        self.updateEmitPlot()
-
-        # =====================================
-        # Extract results and save
-        # =====================================
-        rect = self.rect
-        rect_arr = np.array([rect.get_x(),rect.get_y(),rect.get_width(),rect.get_height()])
-        self.savefcn(
-                dataset     = self.dataset ,
-                analyze_out = self.out     ,
-                rect_arr    = rect_arr     ,
-                camname     = self.camname ,
-                oimg        = self.oimg    ,
-                uid         = uid
-                )
 
     def updateEmitPlot(self):
         validresults = self.fitresults[self.validimg]

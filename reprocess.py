@@ -4,6 +4,7 @@
 #  signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 import pdb
+import logging
 
 import ButterflyEmittancePython as bt
 import E200
@@ -14,6 +15,7 @@ import matplotlib.pyplot as plt
 import mytools as mt
 import numpy as np
 import analyze_matlab as analyze_matlab
+import warnings
 
 from E200_get_data_cam import E200_get_data_cam
 from PyQt4             import QtGui,QtCore
@@ -32,6 +34,7 @@ sets = [['20140629','13537']]
 #  sets = [['20140625','13450']]
 
 logger = mt.mylogger(filename='reprocess')
+logger.setLevel(51)
 logger.debug('Beginning reprocessing...')
 
 for pair in sets:
@@ -39,7 +42,7 @@ for pair in sets:
     setnumber=pair[1]
 
     loadfile     = 'nas/nas-li20-pm00/E200/2014/{}/E200_{}'.format(setdate,setnumber)
-    data         = E200.E200_load_data(loadfile)
+    data         = E200.E200_load_data(loadfile,local=True)
     wf           = data.write_file
     data_wf      = wf['data']
     processed_wf = data_wf['processed']
@@ -64,25 +67,40 @@ for pair in sets:
         rect_vec     = rect_vec_str.dat[0]
         
         rect = mt.qt.Rectangle(*rect_vec)
+        try:
+            logger.debug('Re-analyzing...')
+            out = analyze_matlab(
+                    data     = data_rf ,
+                    camname  = camname ,
+                    oimg     = oimg    ,
+                    rect     = rect    ,
+                    uid      = uid
+                    )
 
-        logger.debug('Re-analyzing...')
-        out = analyze_matlab(
-                data     = data_rf ,
-                camname  = camname ,
-                oimg     = oimg    ,
-                rect     = rect    ,
-                uid      = uid
-                )
-
-        logger.debug('Re-saving...')
-        save_analysis(
-                dataset     = data     ,
-                analyze_out = out      ,
-                rect_arr    = rect_vec ,
-                camname     = camname  ,
-                oimg        = oimg     ,
-                uid         = uid
-                )
+            logger.debug('Re-saving...')
+            print i
+            print uid
+            print out.scanfit.fitresults.emitn
+            save_analysis(
+                    dataset     = data     ,
+                    analyze_out = out      ,
+                    rect_arr    = rect_vec ,
+                    camname     = camname  ,
+                    oimg        = oimg     ,
+                    uid         = uid      ,
+                    valid       = True
+                    )
+        except:
+            save_analysis(
+                    dataset     = data     ,
+                    analyze_out = out      ,
+                    rect_arr    = rect_vec ,
+                    camname     = camname  ,
+                    oimg        = oimg     ,
+                    uid         = uid      ,
+                    valid       = False
+                    )
+            logger.log(level=51,msg='Error analyzing')
 
 # if __name__ == '__main__':
 # 	parser=argparse.ArgumentParser(description='Loads and runs a gui to analyze saved spectrometer data.')
