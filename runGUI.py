@@ -32,7 +32,7 @@ def runGUI(filename,camname,imgnum,verbose=False,loglevel=0):
     # Load data and run program
     # ======================================
 
-    data=E200.E200_load_data(filename,local=True)
+    data=E200.E200_load_data(filename,local=False)
     
     # Generate or retrieve qt app
     app = mt.qt.get_app()
@@ -57,7 +57,8 @@ if __name__ == '__main__':
             help='enable verbose mode')
     parser.add_argument('-l','--log',default='info',choices=['debug','info','warning','error','critical'],
             help='increase logging level')
-    parser.add_argument('-f','--file',
+    parser.add_argument('file',
+            nargs=1,
             help='file to process')
     parser.add_argument('-c','--camera',
             help='camera name')
@@ -66,4 +67,4 @@ if __name__ == '__main__':
 
     arg=parser.parse_args()
 
-    runGUI(arg.file,arg.camera,arg.imgnum,verbose=arg.verbose,loglevel=arg.log)
+    runGUI(arg.file[0],arg.camera,arg.imgnum,verbose=arg.verbose,loglevel=arg.log)
