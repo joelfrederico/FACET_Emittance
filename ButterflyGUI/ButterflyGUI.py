@@ -433,10 +433,11 @@ class ButterflyGUI(QtGui.QMainWindow):
                     valid       = True
                     )
         except:
-            from PyQt4.QtCore import pyqtRemoveInputHook
-            pyqtRemoveInputHook()
-            traceback.print_exc()
-            pdb.post_mortem()
+            pass
+            #  from PyQt4.QtCore import pyqtRemoveInputHook
+            #  pyqtRemoveInputHook()
+            #  traceback.print_exc()
+            #  pdb.post_mortem()
 
     def updateEmitPlot(self):
         validresults = self.fitresults[self.validimg]
