@@ -17,7 +17,7 @@ logger=logging.getLogger(__name__)
 fontsize=7
 layout_rect = [0,0,1,0.95]
 
-def worksheet(data,pdf,main_title):
+def coversheet(data,pdf,main_title):
     gs = gridspec.GridSpec(3,2)
     fig = plt.figure(figsize=(8.5,11))
     fig.suptitle(main_title.format(1))
