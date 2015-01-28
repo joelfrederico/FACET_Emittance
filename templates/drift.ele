@@ -1,0 +1,100 @@
+&run_setup
+	lattice                  = "drift.lte",
+	use_beamline             = "BEAMLINE",
+	output                   = %s.out,
+	! centroid                 = %s.cen,
+	! sigma                    = %s.sig,
+	! final                    = %s.fin,
+	! acceptance               = %s.acceptance,
+	! losses                   = %s.lost,
+	! magnets                  = %s.mag,
+	! parameters               = %s.par,
+	combine_bunch_statistics = 0,
+	default_order            = 2,
+	print_statistics         = 1,
+	random_number_seed       = 987654321,
+	! expand_for               = "NRTL_input_binary.sdds",
+	p_central                = {{ lattice_p_central | default('39824') | float }} ,
+	tracking_updates         = 1,
+	load_balancing_on        = 0,
+&end
+
+&run_control
+	n_steps                  = 1
+&end
+
+&bunched_beam
+	bunch                    = {{ bunch | default('%s.bun')             }} ,
+	n_particles_per_bunch    = {{ n_particles_per_bunch    | default('1e6')    | int   }} ,
+	time_start               = {{ time_start               | default('0')      | int   }} ,
+	emit_nx                  = {{ beam_emit_nx             | default('100e-6') | float }} ,
+	beta_x                   = {{ beam_beta_x              | default('0.5')    | float }} ,
+	alpha_x                  = {{ beam__alpha_x            | default('0.0')    | float }} ,
+	eta_x                    = {{ beam_eta_x               | default('0.0')    | float }} ,
+	etap_x                   = {{ beam_etap_x              | default('0.0')    | float }} ,
+	emit_ny                  = {{ beam_emit_ny             | default('100e-6') | float }} ,
+	beta_y                   = {{ beam_beta_y              | default('5.0')    | float }} ,
+	alpha_y                  = {{ beam_alpha_y             | default('0.0')    | float }} ,
+	eta_y                    = {{ beam_eta_y               | default('0.0')    | float }} ,
+	etap_y                   = {{ beam_etap_y              | default('0.0')    | float }} ,
+	use_twiss_command_values = {{ use_twiss_command_values | default('0')      | float }} ,
+	Po                       = {{ beam_p_central           | default('39824')  | float }} ,
+	sigma_dp                 = {{ sigma_dp                 | default('1e-2')   | float }} ,
+	sigma_s                  = {{ sigma_s                  | default('50e-6')  | float }} ,
+	dp_s_coupling            = {{ dp_s_coupling            | default('0')      | float }} ,
+	momentum_chirp           = {{ momentum_chirp           | default('0')      | float }} ,
+	one_random_bunch         = {{ one_random_bunch         | default('1')      | int   }} ,
+	symmetrize               = {{ symmetrize               | default('0')      | int   }} ,
+	limit_invariants         = 0,
+	limit_in_4d              = 0,
+	enforce_rms_values[0]    = {{ enforce_rms_x | default('1') | int }} , {{ enforce_rms_y | default('1') | int }}, {{ enforce_rms_z | default('1') | int }},
+	distribution_cutoff[0]   = 10, 10, 10,
+	distribution_type[0]     = "gaussian","gaussian","gaussian",
+	centroid[0]              = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+	first_is_fiducial        = 0,
+	save_initial_coordinates = 1
+	{#- We don't have a ring, so this doesn't make sense #}
+	! matched_to_cell          = {{ matched_to_cell | default('NULL') | float }} ,
+	{#- Conflicts with emit_n? #}
+	! emit_x                   = {{ beam_emit_x | default('0')    | float }} ,
+	! emit_y                   = {{ beam_emit_y | default('0')    | float }} ,
+	{#- Specified in terms of sigma_s and sigma_dp and dp_s_coupling and momentum_chirp #}
+	! emit_z                   = {{ emit_z                   | default('0')   | float }} ,
+	! beta_z                   = {{ beta_z                   | default('0')   | float }} ,
+	! alpha_z                  = {{ alpha_z                  | default('0')   | float }} ,
+	{#- Options for using halton sequences not used #}
+	! halton_sequence[3]       = {0, 0, 0},
+	! halton_radix[6]          = {0, 0, 0, 0, 0, 0},
+	! optimized_halton         = 0,
+	! randomize_order[3]       = {0, 0, 0},
+&end
+
+&twiss_output
+	filename     = %s.twi,
+	matched      = {{ matched | default('0')   | int   }},
+	beta_x       = {{ beta_x  | default('0.5') | float }},
+	beta_y       = {{ beta_y  | default('5')   | float }},
+	alpha_x      = {{ alpha_x | default('0')   | float }},
+	alpha_y      = {{ alpha_y | default('0')   | float }},
+	eta_x        = {{ eta_x   | default('0')   | float }},
+	etap_x       = {{ etap_x  | default('0')   | float }},
+	eta_y        = {{ eta_y   | default('0')   | float }},
+	etap_y       = {{ etap_y  | default('0')   | float }},
+	concat_order = 3
+&end
+
+! &sdds_beam
+!         input="NRTL_input_binary.sdds",
+!         center_transversely=1,
+!         center_arrival_time=1
+! &end
+
+! &matrix_output
+!         printout=%s.mpr,
+!         printout_order=2,
+!         SDDS_output=%s.mat,
+!         SDDS_output_order=2,
+! &end
+
+&track
+&end
