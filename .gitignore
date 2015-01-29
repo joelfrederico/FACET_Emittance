@@ -2,6 +2,7 @@
 *.autosave
 *.bun
 *.cen
+*.ele
 *.eps
 *.fin
 *.h-x-y
@@ -11,6 +12,7 @@
 *.jpg
 *.local_files
 *.log
+*.lte
 *.mag
 *.mat
 *.mpr
