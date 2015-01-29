@@ -1,12 +1,17 @@
 #!/usr/bin/env python
-import slactrac as sltr
+import ButterflyEmittancePython as bt
 import mytools as mt
 import numpy as np
-import ButterflyEmittancePython as bt
+import os
+import shlex
+import slactrac as sltr
+import subprocess
+import sys
 
 import jinja2 as jj
+import ipdb
 
-logger = mt.mylogger(filename='runGUI')
+logger = mt.mylogger(filename='worksheet')
 # Set up initial beam
 emitx = np.float(100e-6)
 emity = emitx
@@ -36,11 +41,20 @@ beamline=bt.beamlines.IP_to_lanex(
         QS2_K1 = QS2_K1
         )
 
-beamline.elegant_lte(filename='drift.lte')
+# beamline.elegant_lte(filename='drift.lte')
+# 
+# loader = jj.FileSystemLoader('templates')
+# env = jj.Environment(loader=loader)
+# 
+# template = env.get_template('drift.ele')
+# 
+# template.stream(matched=0).dump('output.ele')
 
-loader = jj.FileSystemLoader('templates')
-env = jj.Environment(loader=loader)
+#  sltr.elegant_sim(beamline)
+path = sltr.elegant_sim(beamline,dir=os.getcwdu())
 
-template = env.get_template('drift.ele')
+command = 'open {}'.format(path)
 
-template.stream(matched=0).dump('output.ele')
+subprocess.call(shlex.split(command))
+
+
