@@ -4,14 +4,18 @@
 
 import mytools as _mt
 
+
 class Mpl_Image(_mt.qt.Mpl_Image):
-	pass
+    pass
+
 
 class Mpl_Image_Plus_Slider(_mt.qt.Mpl_Image_Plus_Slider):
-	pass
+    pass
+
 
 class Mpl_Plot(_mt.qt.Mpl_Plot):
-	pass
+    pass
+
 
 class Slider_and_Text(_mt.qt.Slider_and_Text):
-	pass
+    pass
